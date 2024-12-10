@@ -50,8 +50,9 @@
     
 4. **Run the application**:
    ```bash
-      Copy code
-      go run main.go
+      cd file
+      make up or go run migration/cmd/main.go -direction=up 
+      make run or go run cmd/main.go
 
 5. **Access the app:**:
    ```bash
