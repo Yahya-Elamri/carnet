@@ -52,8 +52,7 @@
    ```bash
       Copy code
       go run main.go
-      Open http://localhost:8080 in your browser.
-   
+
 5. **Access the app:**:
    ```bash
       Open http://localhost:8080 in your browser.
