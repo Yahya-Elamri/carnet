@@ -1,0 +1,44 @@
+package auth
+
+import(
+    "github.com/Yahya-Elamri/signeitfaster/views/components"
+)
+
+templ Login(){
+    @components.Header("/assets/imgs/logoblack.png")
+    <div class="container mx-auto flex items-center justify-center gap-5">
+        <div class="flex-col w-[35%] flex justify-center items-start px-5 h-[75vh]">
+            <h1 class="text-3xl poppins-medium h-[10vh] flex items-center underline">Sign in</h1>
+            <form class="w-full flex flex-col gap-5 justify-between items-start fade-in" hx-post="/auth-user" hx-target="this" hx-swap="outerHTML" method="POST">
+                <div class="w-full flex flex-col gap-2">
+                    <label class="font-semibold	 font-sans" for="username">Username or Email</label>
+                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-200 hover:shadow-md focus:shadow-pink-200 focus:shadow-md px-[20px] py-[18px] rounded-xl" type="text" name="Username" id="username" required/>
+                </div>
+                <div class="w-full flex flex-col gap-2">
+                    <label class="font-semibold	 font-sans" for="password">Password</label>
+                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-200 hover:shadow-md focus:shadow-pink-200 focus:shadow-md px-[20px] py-[18px] rounded-xl" type="password" name="PasswordHash" id="password" required/>
+                </div>
+                <div class="w-full flex flex-col items-center gap-2">  
+                    <button class="poppins-regular bg-green-500 px-4 py-[12px] w-full rounded-full text-white hover:bg-green-700" type="submit">Sign in</button>
+                    <h1 class="text-[#B4A7AF]">Don't have an account? <a href="/signup" class="underline text-black"> Sign up</a></h1>
+                </div>
+            </form>
+        </div>
+    </div>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+}

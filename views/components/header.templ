@@ -1,0 +1,218 @@
+package components
+
+import (
+    "github.com/Yahya-Elamri/signeitfaster/views/icons"
+    "fmt"
+)
+
+css BackgroundImage(path,rounded string){
+    width: 100%;
+    height: 100%;
+    background-image: { fmt.Sprintf("url('/assets%s')", path) };
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    border-radius: { fmt.Sprintf("%s", rounded) };
+}
+
+templ Header(logo string){
+    <div class="w-full z-10 sticky flex gap-10 h-[100px]">
+        <div class="h-full container flex mx-auto justify-between items-center px-4">
+            <a href="/" class="text-3xl poppins-regular h-full flex items-center"><img src={logo} class="h-[85%] cursor-pointer"/></a> 
+            <div class="flex gap-[40px] w-fit items-center">
+                <ul class="flex gap-2 items-center p-2 justify-center poppins-regular w-full rounded-full bg-[#F4F2F3] h-[50px] shadow-sm">
+                    <li class="poppins-regular rounded-full px-4 py-2 bg-[#ffffff] hover:bg-[#F4F2F3] cursor-pointer"><a href="/">Home</a></li>
+                    <li class="poppins-regular rounded-full px-4 py-2 bg-[#ffffff] hover:bg-[#F4F2F3] cursor-pointer"><a href="/signup">Register</a></li>
+                    <li class="poppins-regular rounded-full px-4 py-2 bg-[#ffffff] hover:bg-[#F4F2F3] cursor-pointer"><a href="/signup">Pricing</a></li>
+                    <li class="poppins-regular rounded-full px-4 py-2 bg-[#ffffff] hover:bg-[#F4F2F3] cursor-pointer"><a href="/signup">About</a></li>
+                    <li class="poppins-regular rounded-full px-4 py-2 bg-[#ffffff] hover:bg-[#F4F2F3] cursor-pointer"><a href="/signup">Contact</a></li>
+                </ul>
+                <div class="flex gap-5 items-center w-full">
+                    <button class="text-[#80AF81]"><a href="/login">Log in</a></button>
+                    <button class="bg-[#508D4E] px-4 py-2 rounded-full poppins-regular text-white hover:bg-green-700"><a href="/signup">Sign up</a></button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+templ HeaderLogged(users struct{UserId uint;Username string; ProfileUrl string}){
+    <div class="w-full z-10 sticky flex gap-10 h-[63px] p-2 px-7 border-b dark:border-[#3F3F3F] top-0 bg-[#ffffff] dark:bg-[#0F0F0F] text-black dark:text-white">
+        <style>
+            .header-dropdown {
+            position: relative;
+            display: inline-block;
+            }
+            
+            .header-dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            }
+
+            .show{
+                display:block
+            }
+        </style>
+        <div class="h-full w-full flex justify-between items-center px-6 md:p-0">
+            <a href="/" class="poppins-regular h-full gap-2 flex items-center">
+                <img class="w-[55px] h-auto" src="/assets/imgs/logo.png" alt="logo" />
+                @icons.Logo("100px","fill-black dark:fill-white")
+            </a> 
+            <div class="sm:flex items-center hidden max-w-[750px] md:w-[560px] lg:w-[580px] justify-between border-[#d5e0d5] border-[1px] dark:border-[#3F3F3F] rounded-full px-4 py-2">
+                <div class="w-[25px]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="full" class="stroke-black dark:stroke-white" fill="none" aria-hidden="true" viewBox="0 0 24 24" role="img"><path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.5" d="M10.688 18.377a7.688 7.688 0 100-15.377 7.688 7.688 0 000 15.377zm5.428-2.261L21 21"></path></svg>
+                </div>
+                <input class="focus:border-none focus:outline-none w-[90%] bg-transparent" name="search" type="text" placeholder="Que Recherchez-vous">
+            </div>
+            <div class="flex justify-between w-fit items-center">
+                <div class="flex gap-2 items-center">
+                    <div class="relative inline-block">
+                        <a href="/poster/post" class="dark:hover:bg-[#101010] rounded-full cursor-pointer border border-[#d5e0d5] dark:border-[#3F3F3F] p-2 hidden md:block poppins-regular">
+                            <abbr title="Ajoutez votre anonnce">@icons.Plus("24px","fill-black dark:fill-white")</abbr>
+                        </a>
+                        <div class="hidden bg-[#f9f9f9] w-[250px] border rounded-xl border-[#d5e0d5] absolute top-[60px] -right-1/3" id="myDropdown1">
+                            <a class="dark:hover:bg-[#101010] block px-4 py-2 hover:bg-[#f1f1f1] rounded-xl poppins-regular" href="/posts">Gérer les publications</a>
+                            <a class="dark:hover:bg-[#101010] block px-4 py-2 hover:bg-[#f1f1f1] rounded-xl poppins-regular" href="/newpost">Créer un nouveau post</a>
+                        </div>
+                    </div>
+                        <div class="rounded-full cursor-pointer border border-[#d5e0d5] dark:border-[#3F3F3F] p-2 hidden md:block" >
+                            @icons.Notification("24px","fill-black dark:fill-white")
+                        </div>
+                    <div class="header-dropdown">
+                        <div class="w-[45px] h-[45px] cursor-pointer bg-cover bg-center rounded-full border border-[#d5e0d5] dark:border-[#3F3F3F]" onclick="toggleHeaderDropdown('myDropdown')">
+                            <div class={BackgroundImage(users.ProfileUrl,"9999rem")}></div>
+                        </div>
+                        <div class="header-dropdown-content hidden bg-[#f9f9f9] dark:bg-[#060809] border rounded-xl w-[280px] px-[16px] py-[8px] border-[#d5e0d5] dark:border-[#3F3F3F] absolute top-[60px] -right-3" id="myDropdown">
+                            <div class="w-full flex flex-col items-start justify-start">
+                                <a class="w-full py-1 border-b dark:border-[#3F3F3F]" href="/profile">
+                                    <div class="px-2 py-3 dark:hover:bg-[#101010] hover:bg-[#f1f1f1] rounded-xl poppins-regular text-md flex items-center gap-2 w-full">
+                                        <div class="w-[45px] h-[45px] cursor-pointer bg-cover bg-center rounded-full border border-[#d5e0d5] dark:border-[#3F3F3F]" onclick="toggleHeaderDropdown('myDropdown')">
+                                            <div class={BackgroundImage(users.ProfileUrl,"9999rem")}></div>
+                                        </div>
+                                        <div class="flex flex-col items-start">
+                                            <p class="poppins-regular text-md underline">voir le profil</p>
+                                            <p class="poppins-regular text-sm text-grey-200">{users.Username}</p>
+                                        </div>
+                                    </div>
+                                </a>
+                                <a class="dark:hover:bg-[#101010] hover:bg-[#f1f1f1] rounded-xl my-1 px-2 py-3 poppins-regular text-md flex items-center w-full gap-1" href="/">
+                                    <span class="flex justify-center gap-xs min-w-0 shrink w-[45px]">@icons.Fuel("25px","fill-black dark:fill-white")</span>
+                                    <span class="flex items-center gap-xs min-w-0 shrink">Fuel</span>
+                                </a>
+                                <a class="dark:hover:bg-[#101010] hover:bg-[#f1f1f1] rounded-xl px-2 py-3 poppins-regular text-md flex items-center w-full justify-between" href="/">
+                                    <div class="flex items-center gap-1">
+                                        <span class="flex justify-center gap-xs min-w-0 shrink w-[45px]">@icons.Moone("25px","fill-black dark:fill-white")</span>
+                                        <span class="flex items-center gap-xs min-w-0 shrink">Mode sombre</span>
+                                    </div>
+                                    <style>
+                                        .switch {
+                                            position: relative;
+                                            display: inline-block;
+                                            width: 60px;
+                                            height: 34px;
+                                            }
+
+                                            /* Hide default HTML checkbox */
+                                            .switch input {
+                                            opacity: 0;
+                                            width: 0;
+                                            height: 0;
+                                            }
+
+                                            /* The slider */
+                                            .slider {
+                                            position: absolute;
+                                            cursor: pointer;
+                                            top: 0;
+                                            left: 0;
+                                            right: 0;
+                                            bottom: 0;
+                                            background-color: #ccc;
+                                            -webkit-transition: .4s;
+                                            transition: .4s;
+                                            }
+
+                                            .slider:before {
+                                            position: absolute;
+                                            content: "";
+                                            height: 26px;
+                                            width: 26px;
+                                            left: 4px;
+                                            bottom: 4px;
+                                            background-color: white;
+                                            -webkit-transition: .4s;
+                                            transition: .4s;
+                                            }
+
+                                            input:checked + .slider {
+                                            background-color: #2196F3;
+                                            }
+
+                                            input:focus + .slider {
+                                            box-shadow: 0 0 1px #2196F3;
+                                            }
+
+                                            input:checked + .slider:before {
+                                            -webkit-transform: translateX(26px);
+                                            -ms-transform: translateX(26px);
+                                            transform: translateX(26px);
+                                            }
+
+                                            /* Rounded sliders */
+                                            .slider.round {
+                                            border-radius: 34px;
+                                            }
+
+                                            .slider.round:before {
+                                            border-radius: 50%;
+                                            }
+                                    </style>
+                                    <label class="switch">
+                                        <input onclick="toggleTheme()" type="checkbox">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </a>
+                                <a class="dark:hover:bg-[#101010] hover:bg-[#f1f1f1] rounded-xl px-2 py-3 poppins-regular text-md flex items-center w-full gap-1" href="/">
+                                    <span class="flex justify-center gap-xs min-w-0 shrink w-[45px]">@icons.Dashboard("25px","stroke-black dark:stroke-white")</span>
+                                    <span class="flex items-center gap-xs min-w-0 shrink">Dashboard</span>
+                                </a>
+                                <a class="w-full py-1 border-b dark:border-[#3F3F3F]" href="/">
+                                    <div class="dark:hover:bg-[#101010] hover:bg-[#f1f1f1] rounded-xl px-2 py-3 poppins-regular text-md flex items-center w-full gap-1">                                    
+                                        <span class="flex justify-center gap-xs min-w-0 shrink w-[45px]">@icons.Money("25px","fill-black dark:fill-white")</span>
+                                        <span class="flex items-center gap-xs min-w-0 shrink">Monétisation</span>
+                                    </div>
+                                </a>
+                                <a class="w-full py-1 border-b dark:border-[#3F3F3F]" href="/parametre">
+                                    <div class="dark:hover:bg-[#101010] hover:bg-[#f1f1f1] rounded-xl px-2 py-3 poppins-regular text-md flex items-center w-full gap-1">
+                                        <span class="flex justify-center gap-xs min-w-0 shrink w-[45px]">@icons.Settings("25px","fill-black dark:fill-white")</span>
+                                        <span class="flex items-center gap-xs min-w-0 shrink">Parametre</span>
+                                    </div>
+                                </a>
+                                <a class="dark:hover:bg-[#101010] my-1 hover:bg-[#f1f1f1] rounded-xl px-2 py-3 poppins-regular text-md flex items-center w-full gap-1" href="/disconnect">
+                                    <span class="flex justify-center gap-xs min-w-0 shrink w-[45px]">@icons.LogOut("25px")</span>
+                                    <span class="flex items-center gap-xs min-w-0 shrink">Se Deconnecter</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+        function toggleHeaderDropdown(DivId) {
+            document.getElementById(DivId).classList.toggle("show");
+        }
+        function getValue() {
+            Value = document.getElementById("myDropdown2").value;
+            console.log(Value)
+            var actionUrl = '/home/' + Value;
+            document.getElementById('searchFrom').action = actionUrl;
+        }
+        </script>
+    </div>
+}

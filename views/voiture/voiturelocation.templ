@@ -1,0 +1,1225 @@
+package voiture
+
+import (
+    "github.com/Yahya-Elamri/signeitfaster/views/components"
+    "github.com/Yahya-Elamri/signeitfaster/views/icons"
+    "github.com/Yahya-Elamri/signeitfaster/module"
+    "strconv"
+    "fmt"
+    "time"
+)
+
+func transform(jsonString string) []string {
+	cleanedString := strings.Trim(jsonString, "[]")
+	cleanedString = strings.ReplaceAll(cleanedString, `"`, "")
+	paths := strings.Split(cleanedString, ",")
+	return paths
+}
+
+css BackgroundImage(path string){
+    width: 100%;
+    height: 100%;
+    background-image: { fmt.Sprintf("url('/assets%s')", path) };
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    border-radius: 1rem;
+}
+
+templ VoitureLocation(users struct{UserId uint;Username string; ProfileUrl string},cars []module.CarListings,totalCount int64){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel() 
+        <div class="w-full md:max-w-[calc(100vw-290px)] flex flex-row-reverse items-start justify-center gap-20 p-4">
+            <div class="w-[22%]">
+                <style>
+                    .dropdown-content {
+                        max-height: 0;
+                        overflow: hidden;
+                        transition: max-height 0.4s ease-in-out;
+                    }
+
+                    .dropdown-content.show {
+                        max-height: 700px;
+                    }
+                </style>
+                <ul class="bg-[#F9FAFA] dark:bg-[#060809] dark:border-[#3F3F3F] p-2 rounded-xl">
+                    <form class="space-y-4">
+                        <li class="dropdown relative">
+                            <a href="#" class="block px-4 py-2 text-gray-800 dark:text-white flex items-center justify-between" onclick="toggleDropdown(event, 'dropdown1')">
+                                <span class="flex poppins-regular items-center gap-2">@icons.Building("28px","") Agences</span>
+                                @icons.Arrow("18px","stroke-black dark:stroke-white") 
+                            </a>
+                            <ul id="dropdown1" class="dropdown-content border-b border-gray-300 dark:border-[#3F3F3F]">
+                                <div class="w-full flex flex-col gap-5 p-4 justify-between items-center">
+                                    <div class="w-full flex flex-col gap-2">
+                                        <label class="poppins-regular" for="name">Nom d&apos;agence</label>
+                                        <input class="border border-[#d5e0d5] dark:bg-[#0F0F0F] text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="text" name="name" id="name"/>
+                                    </div>
+                                    <div class="w-full flex flex-col gap-2">
+                                        <label class="poppins-regular" for="make">Le Modèle</label>
+                                        <input class="border border-[#d5e0d5] dark:bg-[#0F0F0F] text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="text" name="make" id="make"/>
+                                    </div>
+                                    <div class="w-full flex flex-col gap-2">
+                                        <label class="poppins-regular" for="address">Address</label>
+                                        <input class="border border-[#d5e0d5] dark:bg-[#0F0F0F] text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="text" name="address" id="address"/>
+                                    </div>
+                                    <div class="w-full flex flex-col gap-2">
+                                        <label class="font-semibold	font-sans" for="min_price">Min Price: <span id="min-price-value">0</span> Dh</label>
+                                        <input class="px-[20px] py-[11px] rounded-xl" name="min_price" type="range" id="min_price" min="0" max="10000" step="1" value="0" oninput="updateMinPrice(this.value)"/>
+                                        <label class="font-semibold	font-sans" for="max_price">Max Price: <span id="max-price-value">10000</span> Dh</label>
+                                        <input class="px-[20px] py-[11px] rounded-xl" name="max_price" type="range" id="max_price" min="0" max="10000" step="1" value="20000" oninput="updateMaxPrice(this.value)"/>
+                                    </div>
+                                </div>
+                                <script>
+                                    function updateMinPrice(value) {
+                                        document.getElementById('min-price-value').textContent = value;
+                                    }
+
+                                    function updateMaxPrice(value) {
+                                        document.getElementById('max-price-value').textContent = value;
+                                    }
+                                </script>
+                            </ul>
+                        </li>
+                        <li class="dropdown relative">
+                            <div class="block px-4 py-2 cursor-pointer text-gray-800 dark:text-white border-t dark:border-[#3F3F3F] flex items-center justify-between" onclick="toggleDropdown(event, 'dropdown2')">
+                            <span class="flex poppins-regular items-center gap-2">@icons.Transmission("28px","") Transmission </span>
+                            @icons.Arrow("18px","stroke-black dark:stroke-white") 
+                            </div>
+                            <ul id="dropdown2" class="dropdown-content border-b border-gray-300 dark:border-[#3F3F3F]">
+                                <div class="flex flex-col gap-1 p-4">
+                                    <div>
+                                        <input type="checkbox" name="transmission[]" id="automatique" value="automatique">  
+                                        <label for="automatique" class="poppins-regular text-md">Transmission automatique (AT)</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="transmission[]" id="manuelle" value="manuelle">   
+                                        <label for="manuelle" class="poppins-regular text-md">Transmission manuelle (MT)</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="transmission[]" id="manuelle-automatisée" value="manuelle automatisée">   
+                                        <label for="manuelle-automatisée" class="poppins-regular text-md">Transmission manuelle automatisée (AM)</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="transmission[]" id="variation-continue" value="variation continue">   
+                                        <label for="variation-continue" class="poppins-regular text-md">Transmission à variation continue (CVT)</label>
+                                    </div>
+                                </div>
+                            </ul>
+                        </li>
+                        <li class="dropdown relative">
+                            <a href="#" class="block px-4 py-2 text-gray-800 dark:text-white border-t dark:border-[#3F3F3F] flex items-center justify-between" onclick="toggleDropdown(event, 'dropdown3')">
+                            <span class="flex poppins-regular items-center gap-2">@icons.Fuel("28px","fill-black dark:fill-white") Type de carburant</span>
+                            @icons.Arrow("18px","stroke-black dark:stroke-white") 
+                            </a>
+                            <ul id="dropdown3" class="dropdown-content border-b border-gray-300 dark:border-[#3F3F3F]">
+                                <div class="flex flex-col gap-1 p-4">
+                                    <div>
+                                        <input type="checkbox" name="fuel_type[]" id="essence" value="essence">  
+                                        <label for="essence" class="poppins-regular text-md">Essence</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="fuel_type[]" id="diesel" value="diesel">   
+                                        <label for="diesel" class="poppins-regular text-md">Diesel</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="fuel_type[]" id="électrique" value="électrique">   
+                                        <label for="électrique" class="poppins-regular text-md">Electrique</label>
+                                    </div>
+                                </div>
+                            </ul>
+                        </li>
+                        <li class="dropdown relative">
+                            <a href="#" class="block px-4 py-2 text-gray-800 dark:text-white border-t dark:border-[#3F3F3F] flex items-center justify-between" onclick="toggleDropdown(event, 'dropdown4')">
+                            <span class="flex poppins-regular items-center gap-2">@icons.Seats("28px","") Sièges de voiture</span>
+                            @icons.Arrow("18px","stroke-black dark:stroke-white") 
+                            </a>
+                            <ul id="dropdown4" class="dropdown-content border-b border-gray-300 dark:border-[#3F3F3F]">
+                                <div class="flex flex-col gap-1 p-4">
+                                    <div>
+                                        <input type="checkbox" name="seats[]" id="2-seats" value="2">  
+                                        <label for="2-seats" class="poppins-regular text-md">2 Sièges</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="seats[]" id="4-seats" value="4">   
+                                        <label for="4-seats" class="poppins-regular text-md">4 Sièges</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="seats[]" id="5-seats" value="5">   
+                                        <label for="5-seats" class="poppins-regular text-md">5 Sièges</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="seats[]" id="7-seats" value="+7">   
+                                        <label for="7-seats" class="poppins-regular text-md">+7 Sièges</label>
+                                    </div>
+                                </div>
+                            </ul>
+                        </li>
+                        <div class="w-full flex flex-col items-center gap-2 ">  
+                            <button class="poppins-regular bg-green-500 px-4 py-[12px] w-full rounded-lg text-white hover:bg-green-700" type="submit">Filtrer</button>
+                        </div>
+                    </form>
+                </ul>
+                <script>
+                    function toggleDropdown(event, dropdownId) {
+                        event.preventDefault();
+                        const dropdown = document.getElementById(dropdownId);
+
+                        if (dropdown.classList.contains('show')) {
+                            dropdown.classList.remove('show');
+                        } else {
+                            dropdown.classList.add('show');
+                        }
+                    }
+                </script>
+                
+            </div>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+            <div class="w-[60%] flex flex-col gap-4 items-center">
+                <div class="w-full h-[25vh]">
+                    <style>
+                        .swiper {
+                        width: 100%;
+                        height: 100%;
+                        }
+
+                        .swiper-slide {
+                        text-align: center;
+                        font-size: 18px;
+                        background: #fff;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        }
+
+                        .swiper-slide img {
+                        display: block;
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        }
+                    </style>
+                    <div class="swiper mySwiper">
+                        <div class="swiper-wrapper">
+                            for _, car := range cars {
+                                <div class="swiper-slide cursor-pointer hover:bg-emerald-50 dark:hover:bg-gray-900 flex flex-col border p-2 rounded-lg items-start gap-4">
+                                    <div class="w-full flex items-start justify-between">
+                                        <h1 class="text-md poppins-regular capitalize">{car.Make} {car.Model}</h1> 
+                                    </div>                                   
+                                    <div class="w-full h-[80%] bg-auto bg-center overflow-hidden mix-blend-multiply">
+                                        <div class={BackgroundImage(transform(car.ImageURL)[0])}></div>
+                                    </div>
+                                    <div class="w-full flex items-center justify-between overflow-hidden">
+                                        <h1 class="text-lg poppins-regular">{fmt.Sprintf("%.2f", car.Price)}Dh</h1>
+                                        @icons.Arrow("25px","-rotate-90 stroke-black dark:stroke-white") 
+                                    </div> 
+                                </div>
+                            }
+                        </div>
+                        <div class="swiper-pagination"></div>
+                    </div>
+                    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+                    <script>
+                        var swiper = new Swiper(".mySwiper", {
+                        slidesPerView: 1,
+                        spaceBetween: 8,
+                        autoplay: {
+                            delay: 1500,
+                            disableOnInteraction: false,
+                        },
+                        breakpoints: {
+                            640: {
+                            slidesPerView: 2,
+                            },
+                            768: {
+                            slidesPerView: 4,
+                            },
+                            1024: {
+                            slidesPerView: 5,
+                            },
+                        },
+                        });
+                    </script>
+                </div>
+                <div class="w-full">
+                    <div id="item-container">
+                        for _, car := range cars {
+                            <div class="flex items-start gap-8 h-[210px] my-2 py-4 border-b-[1px] last:border-b-0">
+                                <div class="md:w-[50%] lg:w-[40%] h-full bg-contain bg-center overflow-hidden rounded-xl">
+                                    <div class={BackgroundImage(transform(car.ImageURL)[0])}></div>
+                                </div>
+                                <div class="w-full h-full flex items-start justify-between">
+                                    <div class="flex flex-col h-full items-start gap-4">
+                                        <h1 class="text-2xl poppins-regular capitalize">{car.Make} {car.Model}</h1>
+                                        <ul class="flex flex-wrap items-center gap-4">
+                                            <li class="flex items-center gap-2 poppins-regular">
+                                                @icons.Seats("30px","")
+                                                {fmt.Sprintf("%d", car.Seats)}
+                                            </li>
+                                            <li class="flex items-center gap-2 poppins-regular">
+                                                @icons.MileAge("30px","")
+                                                {fmt.Sprintf("%d", car.Mileage)} KM
+                                            </li>
+                                            <li class="flex items-center gap-2 poppins-regular">
+                                                @icons.Transmission("30px","")
+                                                {car.Transmission}
+                                            </li>
+                                            <li class="flex items-center gap-2 poppins-regular">
+                                                @icons.Fuel("30px","fill-black dark:fill-white")
+                                                {car.FuelType}
+                                            </li>
+                                        </ul>
+                                        <ul class="flex items-center gap-4">
+                                            <li class="flex items-center gap-2 text-gray-500 dark:text-gray-500 poppins-regular">
+                                                @icons.Check("30px","", "#16a34a") 
+                                                Couleur : {car.Color}
+                                            </li>
+                                            <li class="flex items-center gap-2 text-gray-500 dark:text-gray-500 poppins-regular">
+                                                @icons.Check("30px","", "#16a34a")
+                                                Année de la voiture : {fmt.Sprintf("%d", car.Year)}
+                                            </li>
+                                        </ul>
+                                        <a href={templ.URL(fmt.Sprintf("/marketplace/voiturelocation/%d",car.Id))} class="text-gray-600 poppins-regular">Cliquez ici pour plus de détails</a>
+                                    </div>
+                                    <div class="h-full flex flex-col items-start justify-between">
+                                        <h1 class="text-2xl poppins-regular flex flex-col gap-1">{fmt.Sprintf("%.2f", car.Price)} Dh<span class="text-gray-400 text-lg">par Jour</span></h1>
+                                        <a href={templ.URL(fmt.Sprintf("/marketplace/voiturelocation/%d",car.Id))} class="bg-green-500 hover:bg-green-700 text-white w-full py-2 px-4 rounded poppins-regular text-center">plus info</a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="w-full flex items-center justify-center gap-5 my-6">
+                        <script src="https://cdn.jsdelivr.net/gh/gnat/surreal@3b4572dd0938ce975225ee598a1e7381cb64ffd8/surreal.js"></script>
+                        <script>
+                            function removePageQueryParameter() {
+                                    const url = new URL(window.location.href);
+                                    const params = new URLSearchParams(url.search);
+                                    params.delete('page');
+                                    const newUrl = `${url.origin}${url.pathname}?${params.toString()}`;
+                                    return newUrl;
+                                }
+                            function getSpecificAttributeFromPath(attribute) {
+                                let url = new URL(window.location.href);
+                                let path = url.pathname;
+
+                                let params = new URLSearchParams(url.search);
+                                return params.get(attribute);
+                            }
+                        </script>
+                        <a href="#" id="prevButt" class="px-5 py-3 hover:bg-emerald-50 dark:hover:bg-gray-900 text-lg border border-black dark:border-white rounded-full">
+                            @icons.Arrow("30px","rotate-90 stroke-black dark:stroke-white")
+                        </a>
+                        <script type="text/javascript">     
+                            var page = getSpecificAttributeFromPath("page")
+                            if (isNaN(page) || page =="" || page === null || page <= 1) {
+                                page = 1
+                            }else{
+                                page = parseInt(page) - 1
+                            }
+                            if(window.location.search == ""){
+                                var fullpath = window.location.pathname +`?page=${page}`
+                            }else {
+                                var fullpath = removePageQueryParameter() +`&page=${page}`
+                            }
+                            document.getElementById("prevButt").href=fullpath;
+                        </script>  
+                        for i := int64(0); i < totalCount; i++ {
+                            <a href="#" id={strconv.FormatInt(i+1, 10)} data-name={strconv.FormatInt(i+1, 10)} class="px-5 py-3 hover:bg-emerald-50 dark:hover:bg-gray-900 text-lg border border-black dark:border-white rounded-full">{strconv.FormatInt(i+1, 10)}</a>
+                            <script type="text/javascript">
+                                var Path =  removePageQueryParameter()
+                                var page = me("-").getAttribute('data-name');
+                                if(window.location.search == ""){
+                                    var fullpath = window.location.pathname +`?page=${page}`
+                                }else {
+                                    var fullpath = Path +`&page=${page}`
+                                }
+                                me("-").href = fullpath;
+                            </script>
+                        }
+                        <a href="#" id="nextButt" class="px-5 py-3 hover:bg-emerald-50 dark:hover:bg-gray-900 text-lg border border-black dark:border-white rounded-full">
+                            @icons.Arrow("30px","-rotate-90 stroke-black dark:stroke-white")
+                        </a>
+                        <script type="text/javascript">     
+                            var page = getSpecificAttributeFromPath("page")
+                            if (isNaN(page)  || page =="" || page === null) {
+                                page = 2
+                            }else {
+                                page = parseInt(page) + 1
+                            }                                
+                            if(window.location.search == ""){
+                                var fullpath = window.location.pathname +`?page=${page}`
+                            }else {
+                                var fullpath = removePageQueryParameter() +`&page=${page}`
+                            }
+                            document.getElementById("nextButt").href=fullpath;
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>   
+}
+
+templ VoitureSales(users struct{UserId uint;Username string; ProfileUrl string},cars []module.CarSalesListings,totalCount int64){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel() 
+        <div class="w-full md:max-w-[calc(100vw-290px)] flex flex-row-reverse items-start justify-center gap-20 p-4">
+            <div class="w-[22%]">
+                <style>
+                    .dropdown-content {
+                        max-height: 0;
+                        overflow: hidden;
+                        transition: max-height 0.4s ease-in-out;
+                    }
+
+                    .dropdown-content.show {
+                        max-height: 700px;
+                    }
+                </style>
+                <ul class="bg-[#F9FAFA] dark:bg-[#060809] dark:border-[#3F3F3F] p-2 rounded-xl">
+                    <form class="space-y-4">
+                        <li class="dropdown relative">
+                            <a href="#" class="block px-4 py-2 text-gray-800 dark:text-white flex items-center justify-between" onclick="toggleDropdown(event, 'dropdown1')">
+                                <span class="flex poppins-regular items-center gap-2">@icons.Voiture("28px","") Information</span>
+                                @icons.Arrow("18px","stroke-black dark:stroke-white") 
+                            </a>
+                            <ul id="dropdown1" class="dropdown-content-b border-b border-gray-300 dark:border-[#3F3F3F]">
+                                <div class="w-full flex flex-col gap-5 p-4 justify-between items-center">
+                                    <div class="w-full flex flex-col gap-2">
+                                        <label class="poppins-regular" for="make">Le Modèle</label>
+                                        <input class="border border-[#d5e0d5] dark:bg-[#0F0F0F] text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="text" name="make" id="make"/>
+                                    </div>
+                                    <div class="w-full flex flex-col gap-2">
+                                        <label class="poppins-regular" for="address">Address</label>
+                                        <input class="border border-[#d5e0d5] dark:bg-[#0F0F0F] text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="text" name="address" id="address"/>
+                                    </div>
+                                    <div class="w-full flex flex-col gap-2">
+                                        <label class="font-semibold	font-sans" for="min_price">Min Price: <span id="min-price-value">0</span> Dh</label>
+                                        <input class="px-[20px] py-[11px] rounded-xl" name="min_price" type="range" id="min_price" min="0" max="10000" step="1" value="0" oninput="updateMinPrice(this.value)"/>
+                                        <label class="font-semibold	font-sans" for="max_price">Max Price: <span id="max-price-value">10000</span> Dh</label>
+                                        <input class="px-[20px] py-[11px] rounded-xl" name="max_price" type="range" id="max_price" min="0" max="10000" step="1" value="20000" oninput="updateMaxPrice(this.value)"/>
+                                    </div>
+                                </div>
+                                <script>
+                                    function updateMinPrice(value) {
+                                        document.getElementById('min-price-value').textContent = value;
+                                    }
+
+                                    function updateMaxPrice(value) {
+                                        document.getElementById('max-price-value').textContent = value;
+                                    }
+                                </script>
+                            </ul>
+                        </li>
+                        <li class="dropdown relative">
+                            <div class="block px-4 py-2 cursor-pointer text-gray-800 dark:text-white border-t dark:border-[#3F3F3F] flex items-center justify-between" onclick="toggleDropdown(event, 'dropdown2')">
+                            <span class="flex poppins-regular items-center gap-2">@icons.Transmission("28px","") Transmission </span>
+                            @icons.Arrow("18px","stroke-black dark:stroke-white") 
+                            </div>
+                            <ul id="dropdown2" class="dropdown-content border-b border-gray-300 dark:border-[#3F3F3F]">
+                                <div class="flex flex-col gap-1 px-4 py-2">
+                                    <div>
+                                        <input type="checkbox" name="transmission[]" id="automatique" value="automatique">  
+                                        <label for="automatique" class="poppins-regular text-md">Transmission automatique (AT)</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="transmission[]" id="manuelle" value="manuelle">   
+                                        <label for="manuelle" class="poppins-regular text-md">Transmission manuelle (MT)</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="transmission[]" id="manuelle-automatisée" value="manuelle automatisée">   
+                                        <label for="manuelle-automatisée" class="poppins-regular text-md">Transmission manuelle automatisée (AM)</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="transmission[]" id="variation-continue" value="variation continue">   
+                                        <label for="variation-continue" class="poppins-regular text-md">Transmission à variation continue (CVT)</label>
+                                    </div>
+                                </div>
+                            </ul>
+                        </li>
+                        <li class="dropdown relative">
+                            <a href="#" class="block px-4 py-2 text-gray-800 dark:text-white border-t dark:border-[#3F3F3F] flex items-center justify-between" onclick="toggleDropdown(event, 'dropdown3')">
+                            <span class="flex poppins-regular items-center gap-2">@icons.Fuel("28px","fill-black dark:fill-white") Type de carburant</span>
+                            @icons.Arrow("18px","stroke-black dark:stroke-white") 
+                            </a>
+                            <ul id="dropdown3" class="dropdown-content border-b border-gray-300 dark:border-[#3F3F3F]">
+                                <div class="flex flex-col gap-1 p-4">
+                                    <div>
+                                        <input type="checkbox" name="fuel_type[]" id="essence" value="essence">  
+                                        <label for="essence" class="poppins-regular text-md">Essence</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="fuel_type[]" id="diesel" value="diesel">   
+                                        <label for="diesel" class="poppins-regular text-md">Diesel</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="fuel_type[]" id="électrique" value="électrique">   
+                                        <label for="électrique" class="poppins-regular text-md">Electrique</label>
+                                    </div>
+                                </div>
+                            </ul>
+                        </li>
+                        <li class="dropdown relative">
+                            <a href="#" class="block px-4 py-2 text-gray-800 dark:text-white border-t dark:border-[#3F3F3F] flex items-center justify-between" onclick="toggleDropdown(event, 'dropdown4')">
+                            <span class="flex poppins-regular items-center gap-2">@icons.Seats("28px","") Sièges de voiture</span>
+                            @icons.Arrow("18px","stroke-black dark:stroke-white") 
+                            </a>
+                            <ul id="dropdown4" class="dropdown-content border-b border-gray-300 dark:border-[#3F3F3F]">
+                                <div class="flex flex-col gap-1 p-4">
+                                    <div>
+                                        <input type="checkbox" name="seats[]" id="2-seats" value="2">  
+                                        <label for="2-seats" class="poppins-regular text-md">2 Sièges</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="seats[]" id="4-seats" value="4">   
+                                        <label for="4-seats" class="poppins-regular text-md">4 Sièges</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="seats[]" id="5-seats" value="5">   
+                                        <label for="5-seats" class="poppins-regular text-md">5 Sièges</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" name="seats[]" id="7-seats" value="+7">   
+                                        <label for="7-seats" class="poppins-regular text-md">+7 Sièges</label>
+                                    </div>
+                                </div>
+                            </ul>
+                        </li>
+                        <div class="w-full flex flex-col items-center gap-2 ">  
+                            <button class="poppins-regular bg-green-500 px-4 py-[12px] w-full rounded-lg text-white hover:bg-green-700" type="submit">Filtrer</button>
+                        </div>
+                    </form>
+                </ul>
+                <script>
+                    function toggleDropdown(event, dropdownId) {
+                        event.preventDefault();
+                        const dropdown = document.getElementById(dropdownId);
+
+                        if (dropdown.classList.contains('show')) {
+                            dropdown.classList.remove('show');
+                        } else {
+                            dropdown.classList.add('show');
+                        }
+                    }
+                </script>
+                
+            </div>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+            <div class="w-[60%] flex flex-col gap-4 items-center">
+                <div class="w-full h-[25vh]">
+                    <style>
+                        .swiper {
+                        width: 100%;
+                        height: 100%;
+                        }
+
+                        .swiper-slide {
+                        text-align: center;
+                        font-size: 18px;
+                        background: #fff;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        }
+
+                        .swiper-slide img {
+                        display: block;
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        }
+                    </style>
+                    <div class="swiper mySwiper">
+                        <div class="swiper-wrapper">
+                            for _, car := range cars {
+                                <div class="swiper-slide cursor-pointer hover:bg-emerald-50 dark:hover:bg-gray-900 flex flex-col border p-2 rounded-lg items-start gap-4">
+                                    <div class="w-full flex items-start justify-between">
+                                        <h1 class="text-md poppins-regular capitalize">{car.Make} {car.Model}</h1> 
+                                    </div>                                   
+                                    <div class="w-full h-[80%] bg-auto bg-center overflow-hidden mix-blend-multiply">
+                                        <div class={BackgroundImage(transform(car.ImageURL)[0])}></div>
+                                    </div>
+                                    <div class="w-full flex items-center justify-between overflow-hidden">
+                                        <h1 class="text-lg poppins-regular">{fmt.Sprintf("%.2f", car.Price)}Dh</h1>
+                                        @icons.Arrow("25px","-rotate-90 stroke-black dark:stroke-white") 
+                                    </div> 
+                                </div>
+                            }
+                        </div>
+                        <div class="swiper-pagination"></div>
+                    </div>
+                    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+                    <script>
+                        var swiper = new Swiper(".mySwiper", {
+                        slidesPerView: 1,
+                        spaceBetween: 8,
+                        autoplay: {
+                            delay: 1500,
+                            disableOnInteraction: false,
+                        },
+                        breakpoints: {
+                            640: {
+                            slidesPerView: 2,
+                            },
+                            768: {
+                            slidesPerView: 4,
+                            },
+                            1024: {
+                            slidesPerView: 5,
+                            },
+                        },
+                        });
+                    </script>
+                </div>
+                <div class="w-full">
+                    <div id="item-container">
+                        for _, car := range cars {
+                            <div class="flex items-start gap-8 h-[210px] my-2 py-4 border-b-[1px] last:border-b-0" >
+                                <div class="md:w-[50%] lg:w-[40%] h-full bg-contain bg-center overflow-hidden rounded-xl">
+                                    <div class={BackgroundImage(transform(car.ImageURL)[0])}></div>
+                                </div>
+                                <div class="w-full h-full flex items-start justify-between">
+                                    <div class="flex flex-col h-full items-start gap-4">
+                                        <h1 class="text-2xl poppins-regular capitalize">{car.Make} {car.Model}</h1>
+                                        <ul class="flex  items-center gap-4">
+                                            <li class="flex items-center gap-2 poppins-regular">
+                                                @icons.Seats("30px","")
+                                                {fmt.Sprintf("%d", car.Seats)}
+                                            </li>
+                                            <li class="flex items-center gap-2 poppins-regular">
+                                                @icons.MileAge("30px","")
+                                                {fmt.Sprintf("%d", car.Mileage)} KM
+                                            </li>
+                                            <li class="flex items-center gap-2 poppins-regular">
+                                                @icons.Transmission("30px","")
+                                                {car.Transmission}
+                                            </li>
+                                            <li class="flex items-center gap-2 poppins-regular">
+                                                @icons.Fuel("30px","fill-black dark:fill-white")
+                                                {car.FuelType}
+                                            </li>
+                                        </ul>
+                                        <ul class="flex items-center gap-4">
+                                            <li class="flex items-center gap-2 text-gray-500 dark:text-gray-500 poppins-regular">
+                                                @icons.Check("30px","", "#16a34a") 
+                                                Couleur : {car.Color}
+                                            </li>
+                                            <li class="flex items-center gap-2 text-gray-500 dark:text-gray-500 poppins-regular">
+                                                @icons.Check("30px","", "#16a34a")
+                                                Année de la voiture : {fmt.Sprintf("%d", car.Year)}
+                                            </li>
+                                        </ul>
+                                        <a href={templ.URL(fmt.Sprintf("/marketplace/voituresales/%d",car.Id))} class="text-gray-600 poppins-regular">Cliquez ici pour plus de détails</a>
+                                    </div>
+                                    <div class="h-full flex flex-col items-start justify-between">
+                                        <h1 class="text-2xl poppins-regular flex flex-col gap-1">{fmt.Sprintf("%.2f", car.Price)} Dh</h1>
+                                        <a href={templ.URL(fmt.Sprintf("/marketplace/voituresales/%d",car.Id))} class="bg-green-500 hover:bg-green-700 text-white w-full py-2 px-4 rounded poppins-regular text-center" >plus info</a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="w-full flex items-center justify-center gap-5 my-6">
+                        <script src="https://cdn.jsdelivr.net/gh/gnat/surreal@3b4572dd0938ce975225ee598a1e7381cb64ffd8/surreal.js"></script>
+                        <script>
+                            function removePageQueryParameter() {
+                                    const url = new URL(window.location.href);
+                                    const params = new URLSearchParams(url.search);
+                                    params.delete('page');
+                                    const newUrl = `${url.origin}${url.pathname}?${params.toString()}`;
+                                    return newUrl;
+                                }
+                            function getSpecificAttributeFromPath(attribute) {
+                                let url = new URL(window.location.href);
+                                let path = url.pathname;
+
+                                let params = new URLSearchParams(url.search);
+                                return params.get(attribute);
+                            }
+                        </script>
+                        <a href="#" id="prevButt" class="px-5 py-3 hover:bg-emerald-50 dark:hover:bg-gray-900 text-lg border border-black dark:border-white rounded-full">
+                            @icons.Arrow("30px","rotate-90 stroke-black dark:stroke-white")
+                        </a>
+                        <script type="text/javascript">     
+                            var page = getSpecificAttributeFromPath("page")
+                            if (isNaN(page) || page =="" || page === null || page <= 1) {
+                                page = 1
+                            }else{
+                                page = parseInt(page) - 1
+                            }
+                            if(window.location.search == ""){
+                                var fullpath = window.location.pathname +`?page=${page}`
+                            }else {
+                                var fullpath = removePageQueryParameter() +`&page=${page}`
+                            }
+                            document.getElementById("prevButt").href=fullpath;
+                        </script>  
+                        for i := int64(0); i < totalCount; i++ {
+                            <a href="#" id={strconv.FormatInt(i+1, 10)} data-name={strconv.FormatInt(i+1, 10)} class="px-5 py-3 hover:bg-emerald-50 dark:hover:bg-gray-900 text-lg border border-black dark:border-white rounded-full">{strconv.FormatInt(i+1, 10)}</a>
+                            <script type="text/javascript">
+                                var Path =  removePageQueryParameter()
+                                var page = me("-").getAttribute('data-name');
+                                if(window.location.search == ""){
+                                    var fullpath = window.location.pathname +`?page=${page}`
+                                }else {
+                                    var fullpath = Path +`&page=${page}`
+                                }
+                                me("-").href = fullpath;
+                            </script>
+                        }
+                        <a href="#" id="nextButt" class="px-5 py-3 hover:bg-emerald-50 dark:hover:bg-gray-900 text-lg border border-black dark:border-white rounded-full">
+                            @icons.Arrow("30px","-rotate-90 stroke-black dark:stroke-white")
+                        </a>
+                        <script type="text/javascript">     
+                            var page = getSpecificAttributeFromPath("page")
+                            if (isNaN(page)  || page =="" || page === null) {
+                                page = 2
+                            }else {
+                                page = parseInt(page) + 1
+                            }                                
+                            if(window.location.search == ""){
+                                var fullpath = window.location.pathname +`?page=${page}`
+                            }else {
+                                var fullpath = removePageQueryParameter() +`&page=${page}`
+                            }
+                            document.getElementById("nextButt").href=fullpath;
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+templ VoitureParts(users struct{UserId uint;Username string; ProfileUrl string},cars []module.CarPartsListings,totalCount int64){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel() 
+        <div class="w-full md:max-w-[calc(100vw-290px)] flex flex-row-reverse items-start justify-center gap-16 p-4">
+            <div class="w-[22%]">
+                <style>
+                    .dropdown-content {
+                        max-height: 700px;
+                        overflow: hidden;
+                        transition: max-height 0.4s ease-in-out;
+                    }
+
+                    .dropdown-content.show {
+                        max-height: 700px;
+                    }
+                </style>
+                 <ul class="bg-[#F9FAFA] dark:bg-[#060809] dark:border-[#3F3F3F] p-2 rounded-xl">
+                    <form class="space-y-4">
+                        <li class="dropdown relative">
+                            <a href="#" class="block px-4 py-2 text-gray-800 dark:text-white border-b flex items-center justify-between" onclick="toggleDropdown(event, 'dropdown1')">
+                                <span class="flex poppins-regular items-center gap-2">@icons.Voiture("28px","") Information</span>
+                                @icons.Arrow("18px","stroke-black dark:stroke-white") 
+                            </a>
+                            <ul id="dropdown1" class="dropdown-content border-b border-gray-300 dark:border-[#3F3F3F]">
+                                <div class="w-full flex flex-col gap-5 p-4 justify-between items-center">
+                                    <div class="w-full flex flex-col gap-2">
+                                        <label class="poppins-regular" for="part_name">La piece</label>
+                                        <input class="border border-[#d5e0d5] dark:bg-[#0F0F0F] text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="text" name="part_name" id="part_name"/>
+                                    </div>
+                                    <div class="w-full flex flex-col gap-2">
+                                        <label class="poppins-regular" for="make">La Marque</label>
+                                        <input class="border border-[#d5e0d5] dark:bg-[#0F0F0F] text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="text" name="make" id="make"/>
+                                    </div>
+                                    <div class="w-full flex flex-col gap-2">
+                                        <label class="poppins-regular" for="etat">Etat</label>
+                                        <input class="border border-[#d5e0d5] dark:bg-[#0F0F0F] text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="text" name="etat" id="etat"/>
+                                    </div>
+                                    <div class="w-full flex flex-col gap-2">
+                                        <label class="poppins-regular" for="address">Address</label>
+                                        <input class="border border-[#d5e0d5] dark:bg-[#0F0F0F] text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="text" name="address" id="address"/>
+                                    </div>
+                                    <div class="w-full flex flex-col gap-2">
+                                        <label class="font-semibold	font-sans" for="min_price">Min Price: <span id="min-price-value">0</span> Dh</label>
+                                        <input class="px-[20px] py-[11px] rounded-xl" name="min_price" type="range" id="min_price" min="0" max="10000" step="1" value="0" oninput="updateMinPrice(this.value)"/>
+                                        <label class="font-semibold	font-sans" for="max_price">Max Price: <span id="max-price-value">10000</span> Dh</label>
+                                        <input class="px-[20px] py-[11px] rounded-xl" name="max_price" type="range" id="max_price" min="0" max="10000" step="1" value="20000" oninput="updateMaxPrice(this.value)"/>
+                                    </div>
+                                </div>
+                                <script>
+                                    function updateMinPrice(value) {
+                                        document.getElementById('min-price-value').textContent = value;
+                                    }
+
+                                    function updateMaxPrice(value) {
+                                        document.getElementById('max-price-value').textContent = value;
+                                    }
+                                </script>
+                            </ul>
+                        </li>
+                        <div class="w-full flex flex-col items-center gap-2 ">  
+                            <button class="poppins-regular bg-green-500 px-4 py-[12px] w-full rounded-lg text-white hover:bg-green-700" type="submit">Filtrer</button>
+                        </div>
+                    </form>
+                </ul>
+                <script>
+                    function toggleDropdown(event, dropdownId) {
+                        event.preventDefault();
+                        const dropdown = document.getElementById(dropdownId);
+
+                        if (dropdown.classList.contains('show')) {
+                            dropdown.classList.remove('show');
+                        } else {
+                            dropdown.classList.add('show');
+                        }
+                    }
+                </script>
+                
+            </div>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+            <div class="w-[60%] flex flex-col gap-4 items-center">
+                <div class="w-full h-[25vh]">
+                    <style>
+                        .swiper {
+                        width: 100%;
+                        height: 100%;
+                        }
+
+                        .swiper-slide {
+                        text-align: center;
+                        font-size: 18px;
+                        background: #fff;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        }
+
+                        .swiper-slide img {
+                        display: block;
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        }
+                    </style>
+                    <div class="swiper mySwiper">
+                        <div class="swiper-wrapper">
+                            for _, car := range cars {
+                                <div class="swiper-slide cursor-pointer hover:bg-emerald-50 dark:hover:bg-gray-900 flex flex-col border p-2 rounded-lg items-start gap-4">
+                                    <div class="w-full flex items-start justify-between">
+                                        <h1 class="text-md poppins-regular capitalize truncate">{car.PartName}</h1> 
+                                    </div>                                   
+                                    <div class="w-full h-[80%] bg-auto bg-center overflow-hidden mix-blend-multiply">
+                                        <div class={BackgroundImage(transform(car.ImageURL)[0])}></div>
+                                    </div>
+                                    <div class="w-full flex items-center justify-between overflow-hidden">
+                                        <h1 class="text-lg poppins-regular">{fmt.Sprintf("%.2f", car.Price)}Dh</h1>
+                                        @icons.Arrow("25px","-rotate-90 stroke-black dark:stroke-white") 
+                                    </div> 
+                                </div>
+                            }
+                            for _, car := range cars {
+                                <div class="swiper-slide cursor-pointer hover:bg-emerald-50 dark:hover:bg-gray-900 flex flex-col border p-2 rounded-lg items-start gap-4">
+                                    <div class="w-full flex items-start justify-between">
+                                        <h1 class="text-md poppins-regular capitalize truncate">{car.PartName}</h1> 
+                                    </div>                                   
+                                    <div class="w-full h-[80%] bg-auto bg-center overflow-hidden mix-blend-multiply">
+                                        <div class={BackgroundImage(transform(car.ImageURL)[0])}></div>
+                                    </div>
+                                    <div class="w-full flex items-center justify-between overflow-hidden">
+                                        <h1 class="text-lg poppins-regular">{fmt.Sprintf("%.2f", car.Price)}Dh</h1>
+                                        @icons.Arrow("25px","-rotate-90 stroke-black dark:stroke-white") 
+                                    </div> 
+                                </div>
+                            }
+                        </div>
+                        <div class="swiper-pagination"></div>
+                    </div>
+                    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+                    <script>
+                        var swiper = new Swiper(".mySwiper", {
+                        slidesPerView: 1,
+                        spaceBetween: 8,
+                        autoplay: {
+                            delay: 1500,
+                            disableOnInteraction: false,
+                        },
+                        breakpoints: {
+                            640: {
+                            slidesPerView: 2,
+                            },
+                            768: {
+                            slidesPerView: 4,
+                            },
+                            1024: {
+                            slidesPerView: 5,
+                            },
+                        },
+                        });
+                    </script>
+                </div>
+                <div class="w-full">
+                    <div id="item-container">
+                        for _, car := range cars {
+                            <div class="flex items-start gap-8 h-[210px] my-2 py-4 border-b-[1px] last:border-b-0" >
+                                <div class="md:w-[50%] lg:w-[40%] h-full bg-contain bg-center overflow-hidden rounded-xl">
+                                    <div class={BackgroundImage(transform(car.ImageURL)[0])}></div>
+                                </div>
+                                <div class="w-full h-full flex items-start justify-between">
+                                    <div class="flex flex-col h-full items-start gap-4">
+                                        <h1 class="text-2xl poppins-regular capitalize">{car.PartName}</h1>
+                                        <ul class="flex  items-center gap-4">
+                                            <li class="flex items-center gap-1 text-gray-500 dark:text-gray-500 poppins-regular text-lg">
+                                                <span class="text-black dark:text-white">Marque</span> : {car.Make}
+                                            </li>
+                                            <li class="flex items-center gap-1 text-gray-500 dark:text-gray-500 poppins-regular text-lg">
+                                                <span class="text-black dark:text-white">Etat</span> : {car.Etat}
+                                            </li>
+                                            <li class="flex items-center gap-1 text-gray-500 dark:text-gray-500 poppins-regular text-lg">
+                                                <span class="text-black dark:text-white">Stock</span> : {fmt.Sprintf("%d", car.Stock)}
+                                            </li>
+                                        </ul>
+                                        <a href={templ.URL(fmt.Sprintf("/marketplace/voitureparts/%d",car.Id))} class="text-gray-600 poppins-regular">Cliquez ici pour plus de détails</a>
+                                    </div>
+                                    <div class="h-full flex flex-col items-start justify-between">
+                                        <h1 class="text-2xl poppins-regular flex flex-col gap-1">{fmt.Sprintf("%.2f", car.Price)} Dh</h1>
+                                        <a href={templ.URL(fmt.Sprintf("/marketplace/voitureparts/%d",car.Id))} class="bg-green-500 hover:bg-green-700 text-white w-full py-2 px-4 rounded poppins-regular text-center" >plus info</a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="w-full flex items-center justify-center gap-5 my-6">
+                        <script src="https://cdn.jsdelivr.net/gh/gnat/surreal@3b4572dd0938ce975225ee598a1e7381cb64ffd8/surreal.js"></script>
+                        <script>
+                            function removePageQueryParameter() {
+                                    const url = new URL(window.location.href);
+                                    const params = new URLSearchParams(url.search);
+                                    params.delete('page');
+                                    const newUrl = `${url.origin}${url.pathname}?${params.toString()}`;
+                                    return newUrl;
+                                }
+                            function getSpecificAttributeFromPath(attribute) {
+                                let url = new URL(window.location.href);
+                                let path = url.pathname;
+
+                                let params = new URLSearchParams(url.search);
+                                return params.get(attribute);
+                            }
+                        </script>
+                        <a href="#" id="prevButt" class="px-5 py-3 hover:bg-emerald-50 dark:hover:bg-gray-900 text-lg border border-black dark:border-white rounded-full">
+                            @icons.Arrow("30px","rotate-90 stroke-black dark:stroke-white")
+                        </a>
+                        <script type="text/javascript">     
+                            var page = getSpecificAttributeFromPath("page")
+                            if (isNaN(page) || page =="" || page === null || page <= 1) {
+                                page = 1
+                            }else{
+                                page = parseInt(page) - 1
+                            }
+                            if(window.location.search == ""){
+                                var fullpath = window.location.pathname +`?page=${page}`
+                            }else {
+                                var fullpath = removePageQueryParameter() +`&page=${page}`
+                            }
+                            document.getElementById("prevButt").href=fullpath;
+                        </script>  
+                        for i := int64(0); i < totalCount; i++ {
+                            <a href="#" id={strconv.FormatInt(i+1, 10)} data-name={strconv.FormatInt(i+1, 10)} class="px-5 py-3 hover:bg-emerald-50 dark:hover:bg-gray-900 text-lg border border-black dark:border-white rounded-full">{strconv.FormatInt(i+1, 10)}</a>
+                            <script type="text/javascript">
+                                var Path =  removePageQueryParameter()
+                                var page = me("-").getAttribute('data-name');
+                                if(window.location.search == ""){
+                                    var fullpath = window.location.pathname +`?page=${page}`
+                                }else {
+                                    var fullpath = Path +`&page=${page}`
+                                }
+                                me("-").href = fullpath;
+                            </script>
+                        }
+                        <a href="#" id="nextButt" class="px-5 py-3 hover:bg-emerald-50 dark:hover:bg-gray-900 text-lg border border-black dark:border-white rounded-full">
+                            @icons.Arrow("30px","-rotate-90 stroke-black dark:stroke-white")
+                        </a>
+                        <script type="text/javascript">     
+                            var page = getSpecificAttributeFromPath("page")
+                            if (isNaN(page)  || page =="" || page === null) {
+                                page = 2
+                            }else {
+                                page = parseInt(page) + 1
+                            }                                
+                            if(window.location.search == ""){
+                                var fullpath = window.location.pathname +`?page=${page}`
+                            }else {
+                                var fullpath = removePageQueryParameter() +`&page=${page}`
+                            }
+                            document.getElementById("nextButt").href=fullpath;
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+templ VoitureOnly(users struct{UserId uint;Username string; ProfileUrl string},items module.MixedListing){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel()   
+        <div class="w-[80vw] h-[93vh] flex items-center justify-center">
+            <div class="w-[90%] flex items-start justify-center gap-5">
+                <div class="w-[45%]">
+                    <div class="w-full lg:h-[600px]">
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+                        <style>
+                            .swiper {
+                            width: 100%;
+                            height: 100%;
+                            }
+
+                            .swiper-slide {
+                            text-align: center;
+                            font-size: 18px;
+                            background: #fff;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            }
+
+                            .swiper-slide img {
+                            display: block;
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                            }
+
+                            .swiper {
+                            width: 100%;
+                            height: 300px;
+                            margin-left: auto;
+                            margin-right: auto;
+                            }
+
+                            .swiper-slide {
+                            background-size: cover;
+                            background-position: center;
+                            }
+
+                            .mySwiper2 {
+                            height: 80%;
+                            width: 100%;
+                            }
+
+                            .mySwiper {
+                            height: 20%;
+                            box-sizing: border-box;
+                            padding: 10px 0;
+                            }
+
+                            .mySwiper .swiper-slide {
+                            width: 25%;
+                            height: 100%;
+                            opacity: 0.4;
+                            }
+
+                            .mySwiper .swiper-slide-thumb-active {
+                            opacity: 1;
+                            }
+
+                            .swiper-slide img {
+                            display: block;
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                            }
+                        </style>
+                        <div style="--swiper-navigation-color: #fff; --swiper-pagination-color: #fff" class="swiper mySwiper2 w-full">
+                            <div class="swiper-wrapper flex items-center w-full">
+                                for _ , path := range transform(items.ImageURL) {
+                                    <div class="swiper-slide w-full h-full relative overflow-hidden">
+                                        <img src={fmt.Sprintf("/assets%s",path)} alt="image de produit" class="absolute top-1/2 left-1/2 w-full h-full object-conatin	-translate-y-1/2 -translate-x-1/2"/>
+                                    </div>
+                                }
+                            </div>
+                            <div class="swiper-button-next"></div>
+                            <div class="swiper-button-prev"></div>
+                        </div>
+                        <div thumbsSlider="" class="swiper mySwiper">
+                            <div class="swiper-wrapper flex items-center">
+                                for _ , path := range transform(items.ImageURL) {
+                                    <div class="swiper-slide">
+                                        <img sizes="(max-width: 600px) 480px, (max-width: 1200px) 800px, 1200px" src={fmt.Sprintf("/assets%s",path)}  />
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+                        <script>
+                            var swiper = new Swiper(".mySwiper", {
+                            spaceBetween: 10,
+                            slidesPerView: 4,
+                            freeMode: true,
+                            watchSlidesProgress: true,
+                            });
+                            var swiper2 = new Swiper(".mySwiper2", {
+                            spaceBetween: 10,
+                            navigation: {
+                                nextEl: ".swiper-button-next",
+                                prevEl: ".swiper-button-prev",
+                            },
+                            thumbs: {
+                                swiper: swiper,
+                            },
+                            });
+                        </script>
+                    </div>
+                </div>
+                <div class="w-[40%] h-full flex flex-col items-start gap-9">
+                    <div class="flex items-start w-full justify-between">
+                        <div class="flex flex-col w-1/2">
+                            <h1 class="poppins-regular text-2xl">{items.Make} {items.Model} {items.PartName}</h1>
+                            {{
+                                timestampStr := string(items.CreatedAt)
+                                layout := "2006-01-02 15:04:05"
+                                parsedTime, err := time.Parse(layout, timestampStr)
+                                now := time.Now().UTC()
+
+                                if err != nil {
+                                    fmt.Println("Error parsing post time:", err)
+                                }
+
+                                nowTime, err := time.Parse(layout, now.Format("2006-01-02 15:04:05"))
+                                if err != nil {
+                                    fmt.Println("Error parsing now time:", err)
+                                }
+
+                                // Calculate the difference
+                                diff := nowTime.Sub(parsedTime)
+                            }}
+                            <p class="poppins-regular flex gap-1 items-center">@icons.Clock("20px","") il y a
+                                switch {
+                                    case diff < time.Minute:
+                                        if int(diff.Seconds()) == 1 {
+                                            <span>{"1 second"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d seconds", int(diff.Seconds()))}</span>}
+                                    case diff < time.Hour:
+                                        if int(diff.Minutes()) == 1 {
+                                            <span>{"1 minute"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d minutes", int(diff.Minutes()))}</span>}
+                                    case diff < time.Hour*24:
+                                        if int(diff.Hours()) == 1 {
+                                            <span>{"1 heure"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d heures", int(diff.Hours()))}</span>}
+                                    case diff < time.Hour*24*30:
+                                        if int(diff.Hours() / 24) == 1 {
+                                            <span>{"1 jour"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d jours", int(diff.Hours() / 24))}</span>}
+                                    case diff < time.Hour*24*365:
+                                        if int(diff.Hours() / 24 / 30) == 1 {
+                                            <span>{"1 mois"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d mois", int(diff.Hours() / 24 / 30))}</span>}
+                                    default:
+                                        if int(diff.Hours() / 24 / 365) == 1 {
+                                            <span>{"1 année"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d années", int(diff.Hours() / 24 / 365))}</span>}
+                                }
+                            </p>
+                        </div>
+                        <p class="text-2xl poppins-regular flex flex-col">{fmt.Sprintf("%.2f", items.Price)} Dh
+                            if items.Category == "voiturelocation" {
+                                <span class="text-gray-400 text-lg">par Jour</span>
+                            }
+                        </p>
+                    </div>
+                    <div class="w-full flex flex-col items-start gap-2">
+                        if items.Category != "voitureparts" {
+                            <ul class="flex flex-col items-start flex-wrap gap-2">
+                                <li class="flex items-center gap-1 poppins-regular text-lg">
+                                    @icons.Seats("27px","")
+                                    {fmt.Sprintf("%d", items.Seats)}
+                                </li>
+                                <li class="flex items-center gap-1 poppins-regular text-lg">
+                                    @icons.MileAge("27px","")
+                                    {fmt.Sprintf("%d", items.Mileage)} KM
+                                </li>
+                                <li class="flex items-center gap-1 poppins-regular text-lg">
+                                    @icons.Transmission("27px","")
+                                    {items.Transmission}
+                                </li>
+                                <li class="flex items-center gap-1 poppins-regular text-lg">
+                                    @icons.Fuel("27px","fill-black dark:fill-white")
+                                    {items.FuelType}
+                                </li>
+                            </ul>
+                            <ul class="flex flex-col items-start">
+                                <li class="flex items-center gap-1 text-gray-500 dark:text-gray-500 poppins-regular text-lg">
+                                    <span class="text-black dark:text-white">Couleur</span> : {items.Color}
+                                </li>
+                                <li class="flex items-center gap-1 text-gray-500 dark:text-gray-500 poppins-regular text-lg">
+                                    <span class="text-black dark:text-white">Année de la voiture</span> : {fmt.Sprintf("%d", items.Year)}
+                                </li>
+                            </ul>
+                        }else {
+                            <ul class="flex flex-col items-start flex-wrap gap-2">
+                                <li class="flex items-center gap-1 text-gray-500 dark:text-gray-500 poppins-regular text-lg">
+                                    <span class="text-black dark:text-white">Marque</span> : {items.Make}
+                                </li>
+                                <li class="flex items-center gap-1 text-gray-500 dark:text-gray-500 poppins-regular text-lg">
+                                    <span class="text-black dark:text-white">Etat</span> : {items.Etat}
+                                </li>
+                                <li class="flex items-center gap-1 text-gray-500 dark:text-gray-500 poppins-regular text-lg">
+                                    <span class="text-black dark:text-white">Stock</span> : {fmt.Sprintf("%d", items.Stock)}
+                                </li>
+                            </ul>
+                        }
+                    </div>
+                    <p class="poppins-regular text-md text-gray-500 dark:text-gray-500"><span class="text-black dark:text-white">Description : </span><br>{items.Description}</p>
+                    <div class="flex w-full gap-2 items-center justify-between border-y p-2">
+                        <div class="flex w-full gap-2 items-center">
+                            <div class="w-[46px] h-[46px] overflow-hidden rounded-full">
+                                <div class={BackgroundImage(transform(items.ProfileUrl)[0])}></div>
+                            </div>
+                            <div class="flex flex-col">
+                                <p class="poppins-regular">{items.Username}</p>
+                                <p class="flex items-center gap-1 poppins-regular">
+                                    @icons.Gps("20px","","#000000") 
+                                    {items.Address}
+                                </p>
+                            </div>
+                        </div>
+                        <button id="openDialog" class="bg-green-500 hover:bg-green-700 text-white w-[350px] py-2 px-2 rounded poppins-regular">Contacter Moi</button>
+                    </div>
+                </div>
+                <div id="overlay" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden z-10"></div>
+                <!-- Dialog -->
+                <div id="dialog" class="fixed inset-0 flex items-center justify-center hidden z-20">
+                    <div class="bg-white dark:bg-[#060809] p-5 rounded w-[400px] shadow-lg text-center">
+                        <button id="closeDialog" class="px-4 py-2 w-full flex justify-end rounded">@icons.Close("30px","stroke-black dark:stroke-white")</button>
+                        <h2 class="text-xl font-bold flex items-center justify-center mb-4">@icons.Attention("150px","")</h2>
+                        <p class="mb-4 w-full poppins-regular">Attention !Il ne faut jamais envoyer de l’argent à l’avance au vendeur par virement bancaire ou à travers une agence de transfert d’argent lors de l’achat des biens disponibles sur le site.</p>
+                        <p class="poppins-regular">numero de {items.LastName} {items.FirstName} est : {items.Phone}</p>
+                    </div>
+                </div>
+                <script>
+                    const openDialogBtn = document.getElementById('openDialog');
+                    const closeDialogBtn = document.getElementById('closeDialog');
+                    const dialog = document.getElementById('dialog');
+                    const overlay = document.getElementById('overlay');
+
+                    openDialogBtn.addEventListener('click', () => {
+                        dialog.classList.remove('hidden');
+                        overlay.classList.remove('hidden');
+                    });
+
+                    closeDialogBtn.addEventListener('click', () => {
+                        dialog.classList.add('hidden');
+                        overlay.classList.add('hidden');
+                    });
+                </script>
+            </div>
+            //<div></div>
+        </div>
+    </div>
+}

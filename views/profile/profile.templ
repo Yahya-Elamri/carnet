@@ -1,0 +1,207 @@
+package profile
+
+import(
+    "github.com/Yahya-Elamri/signeitfaster/views/components"
+    "github.com/Yahya-Elamri/signeitfaster/module"
+    "github.com/Yahya-Elamri/signeitfaster/utils"
+    "github.com/Yahya-Elamri/signeitfaster/views/icons"
+    "github.com/labstack/echo/v4"
+    "fmt"
+)
+
+css BackgroundImage(path , bgsize string){
+    width: 100%;
+    height: 100%;
+    background-image: { fmt.Sprintf("url('/assets%s')", path) };
+    background-size:  { fmt.Sprintf("%s", bgsize) };
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+
+templ Overview(User module.UserData,overview echo.Map){
+    {{
+        postsInterface := overview["posts"]
+        posts, _ := postsInterface.([]module.PostWithCommunity)
+    }}
+    @Home(User){
+        @components.PostsComponents(posts)
+    }
+}
+
+templ Communities(User module.UserData,communities []module.Communities){
+    @Home(User){
+        <div class="grid grid-cols-2 w-full gap-2">
+            for _,com:= range communities{
+                <div class="w-[400px] rounded-xl p-4 border flex items-center justify-center dark:border-[#3F3F3F]">
+                    <div class="w-full flex flex-col gap-2 items-start">
+                        <div class="w-full flex items-start justify-between">
+                            <a href={templ.URL(fmt.Sprintf("/communautes/%s",com.Name))} class="w-full flex gap-2 items-center">
+                                <div class="w-[50px] h-[50px] bg-contain bg-center overflow-hidden rounded-full">
+                                    <div class={BackgroundImage(utils.Transform(com.CommunitiesMedia)[0],"cover")}></div>
+                                </div>
+                                <div class="w-[73%]">
+                                    <p class="poppins-regular">{com.Name}</p>
+                                    <div class="w-full overflow-hidden"><p >{fmt.Sprintf("%d",com.TotalJoined)} Membres</p></div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="w-full overflow-hidden">
+                            <p class="max-w-[350px] poppins-regular truncate">{com.Description}</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+
+templ Upvote(User module.UserData,votes []module.PostWithCommunity){
+    @Home(User){
+        @components.PostsComponents(votes)
+    }
+}
+
+templ Home(User module.UserData){
+    {{
+        users := struct {
+            UserId     uint 
+            Username   string
+            ProfileUrl string
+        }{
+            UserId:     User.UserId,
+            Username:   User.Username,
+            ProfileUrl: User.ProfileUrl,
+        }
+    }}
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel()
+        <div class="w-full md:max-w-[calc(100vw-290px)] md:min-h-[calc(100vh-63px)] flex flex-col items-center mx-auto justify-start p-4">
+            <div class="w-[74%] flex items-start justify-center gap-3 my-5">
+                <div class="max-w-[68%] bg-white flex flex-col items-start gap-2 dark:bg-[#0F0F0F] text-black dark:text-white py-4 px-2">
+                    <div class="flex justify-between items-start w-full">
+                        <div class="flex items-start gap-4 w-[60%]">
+                            <div class="w-[110px] h-[100px] max-h-[120px] flex items-center justify-center bg-cover bg-grey-700 bg-center overflow-hidden rounded-xl border-2 dark:border-[#3F3F3F]">
+                                <div class={BackgroundImage(User.ProfileUrl,"cover")}></div>
+                            </div>
+                            <div class="w-[90%]">
+                                <h1 class="poppins-semibold text-2xl capitalize">{User.Username}</h1>
+                                <div class="flex items-start flex-col">
+                                    <p class="poppins-regular text-md">43 Posts</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full h-[70px] flex items-center justify-center border-b dark:border-[#3F3F3F]">
+                        <div class="relative w-full overflow-hidden">
+                            <!-- Arrow Icon -->
+                             <button id="slideLeft" class="absolute top-1/2 left-0 transform -translate-y-1/2 bg-[#eaedef] dark:bg-[#060809] p-2 rounded-full hidden z-10">
+                                @icons.Arrow("18px","rotate-90 stroke-black dark:stroke-white")
+                            </button>
+
+                            <!-- Right Arrow Icon -->
+                            <button id="slideRight" class="absolute top-1/2 right-0 transform -translate-y-1/2 bg-[#eaedef] dark:bg-[#060809] p-2 rounded-full z-10">
+                                @icons.Arrow("18px","-rotate-90 stroke-black dark:stroke-white")
+                            </button>
+
+                            <!-- Links List -->
+                            <ul id="linksContainer" class="flex transition-transform duration-500">
+                                <li class="whitespace-nowrap px-3 py-2 hover:bg-[#eaedef] active:bg-[#eaedef] dark:hover:bg-[#060809] active:dark:bg-[#060809] rounded-xl">
+                                    <a href="/profile/overview" class="poppins-meduim text-black dark:text-white dark:active:text-yellow-300">Vue d’ensemble</a>
+                                </li>
+                                <li class="whitespace-nowrap px-3 py-2 hover:bg-[#eaedef] dark:hover:bg-[#060809] dark:active:bg-[#060809] rounded-xl">
+                                    <a href="/profile/communities" class="poppins-meduim text-black dark:text-white active:text-yellow-300">Mes communautés</a>
+                                </li>
+                                <li class="whitespace-nowrap px-3 py-2 hover:bg-[#eaedef] dark:hover:bg-[#060809] rounded-xl">
+                                    <a href="/profile" class="poppins-meduim text-black dark:text-white">Mes threads</a>
+                                </li>
+                                <li class="whitespace-nowrap px-3 py-2 hover:bg-[#eaedef] dark:hover:bg-[#060809] rounded-xl">
+                                    <a href="/profile" class="poppins-meduim text-black dark:text-white">Enregistrée</a>
+                                </li>
+                                <li class="whitespace-nowrap px-3 py-2 hover:bg-[#eaedef] dark:hover:bg-[#060809] rounded-xl">
+                                    <a href="/profile" class="poppins-meduim text-black dark:text-white">mes commentaires</a>
+                                </li>
+                                <li class="whitespace-nowrap px-3 py-2 hover:bg-[#eaedef] dark:hover:bg-[#060809] rounded-xl">
+                                    <a href="/profile/upvotes" class="poppins-meduim text-black dark:text-white">Upvote</a>
+                                </li>
+                                <li class="whitespace-nowrap px-3 py-2 hover:bg-[#eaedef] dark:hover:bg-[#060809] rounded-xl">
+                                    <a href="/profile/downvotes" class="poppins-meduim text-black dark:text-white">Downvote</a>
+                                </li>
+                            </ul>
+                            <script>
+                                document.addEventListener("DOMContentLoaded", function () {
+                                    const linksContainer = document.getElementById("linksContainer");
+                                    const slideLeftBtn = document.getElementById("slideLeft");
+                                    const slideRightBtn = document.getElementById("slideRight");
+                                    let translateX = 0;
+                                    let linksContainerWidth = linksContainer.scrollWidth;
+                                    let containerWidth = linksContainer.parentElement.clientWidth;
+
+                                    const updateButtons = () => {
+                                    slideLeftBtn.classList.toggle("hidden", translateX === 0);
+                                    slideRightBtn.classList.toggle(
+                                        "hidden",
+                                        Math.abs(translateX) >= linksContainerWidth - containerWidth
+                                    );
+                                    };
+
+                                    const slide = (direction) => {
+                                    const step = containerWidth / 1.5;
+                                    if (direction === "right" && Math.abs(translateX) < linksContainerWidth - containerWidth) {
+                                        translateX = Math.max(translateX - step, -(linksContainerWidth - containerWidth));
+                                    } else if (direction === "left" && translateX < 0) {
+                                        translateX = Math.min(translateX + step, 0);
+                                    }
+
+                                    requestAnimationFrame(() => {
+                                        linksContainer.style.transform = `translateX(${translateX}px)`;
+                                    });
+
+                                    updateButtons();
+                                    };
+
+                                    slideRightBtn.addEventListener("click", () => slide("right"));
+                                    slideLeftBtn.addEventListener("click", () => slide("left"));
+
+                                    window.addEventListener("resize", () => {
+                                    linksContainerWidth = linksContainer.scrollWidth;
+                                    containerWidth = linksContainer.parentElement.clientWidth;
+                                    updateButtons();
+                                    });
+
+                                    updateButtons(); // Initial button state
+                                });
+                            </script>
+                        </div>
+                    </div>
+                    <div class="w-full">
+                        { children... }
+                    </div>
+                </div>
+                <div class="max-w-[30%] flex items-start justify-between">
+                    <div class="w-full bg-[#eaedef] p-4 rounded-xl dark:bg-[#060809] text-black dark:text-white sticky top-[75px]">
+                        <div class="py-2">
+                            <div class="flex w-full items-start gap-1">
+                                <p class="poppins-semibold text-2xl capitalize">{User.FirstName}</p>
+                                <p class="poppins-semibold text-2xl capitalize">{User.LastName}</p>
+                            </div>
+                            <p class="poppins-regular text-md text-ellipsis">{User.Description}</p>
+                        </div>
+                        <ul class="flex flex-col items-start gap-1 border-t border-black dark:border-[#3F3F3F] py-2">
+                            <li class="poppins-semibold text-xl">Social Links</li>
+                            for _,link := range utils.Transform(User.SocialLinks) {
+                                <li>
+                                    <a href={templ.URL(link)} target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 hover:text-blue-500 poppins-regular">
+                                        @icons.Link("14px","fill-black dark:fill-white hover:fill-blue-500 dark:hover:fill-blue-500")
+                                        {link}
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}   

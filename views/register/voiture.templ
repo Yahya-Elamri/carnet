@@ -1,0 +1,523 @@
+package register 
+
+import(
+    "github.com/Yahya-Elamri/signeitfaster/views/components"
+    "github.com/Yahya-Elamri/signeitfaster/views/icons"
+    "github.com/Yahya-Elamri/signeitfaster/module"
+    "strconv"
+)
+
+templ VoitureLocation(users struct{UserId uint;Username string; ProfileUrl string},data []module.AgenciesData){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel()
+        <div class="w-full md:max-w-[calc(100vw-272px)] md:min-h-[calc(100vh-63px)] flex flex-col items-center mx-auto justify-start p-4">
+            <div class="w-[74%] flex flex-col items-start justify-center gap-3 my-5">
+                <h1 class="poppins-semibold text-3xl">Créer une annonce</h1>
+                <div class="w-full mb-4">
+                    <ul class="flex gap-4">
+                      <a href="/register/agence"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black cursor-pointer dark:border-white">Creer agence</li></a>
+                        <a href="/register/voiturelocation"><li class="poppins-medium text-md py-1 border-b-2 border-black cursor-pointer dark:border-white">voiture de location</li></a>
+                        <a href="/register/voiturevendre"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black cursor-pointer dark:border-white">voiture a vendre</li></a>
+                        <a href="/register/voitureparts"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black cursor-pointer dark:border-white">Pièces de voiture</li></a>
+                    </ul>
+                </div>
+                <div class="w-[78%] h-full flex flex-col justify-start items-start gap-3">
+                    <div class="flex flex-col w-full items-start">
+                        <p class="poppins-regular text-sm">Remplissez le formulaire ci-dessous pour ajouter votre voiture à notre marché de location.</p>
+                    </div>
+                    <style>
+                    .form-step {
+                        display: none;
+                    }
+                    .form-step.active {
+                        display: flex;
+                    }
+                    .dropzone {
+                        border: 2px dashed #4A5568;
+                        border-radius: 0.375rem;
+                        padding: 2rem;
+                        text-align: center;
+                        cursor: pointer;
+                    }
+                    .dropzone.dragover {
+                        border-color: #3182CE;
+                        background-color: #EBF8FF;
+                    }
+                </style>
+                <div class="w-[78%] flex justify-start items-center">
+                    <div class="w-full flex flex-col gap-2 items-start">
+                        <form hx-post="/add-voiture" id="multiStepForm" enctype="multipart/form-data" class="w-full flex flex-col fade-in justify-between items-start" method="POST">
+                            <div class="w-full flex flex-col items-start gap-5 form-step active" id="step-1">
+                                <ul class="flex w-full items-center justify-between relative before:w-full before:h-3 before:absolute before:bg-[#e5e7eb] dark:before:bg-[#1b1b1b] before:-z-10 before:top-1/2 before:-translate-y-1/2 after:w-[30%] after:h-3 after:absolute transition after:bg-green-500 after:-z-10 after:top-1/2 after:-translate-y-1/2">
+                                    <li class=" py-2 px-4 text-2xl rounded-full bg-green-500 text-white">1</li>
+                                    <li class="poppins-regular py-2 px-4 text-2xl rounded-full bg-[#e5e7eb] dark:bg-[#1b1b1b]">2</li>
+                                    <li class="poppins-regular py-2 px-4 text-2xl rounded-full bg-[#e5e7eb] dark:bg-[#1b1b1b]">3</li>
+                                </ul>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="agency-choice">choisissez l"'"agence</label>
+                                    <select class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" id="agency-choice" name="agency_id">
+                                        for _, item := range data {
+                                            <option value={strconv.Itoa(int(item.Id))}>{ item.Username }</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="make">La Marque</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="text" name="make" id="make" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="model">Le Modèle</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="text" name="model" id="model" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="year">Année de la voiture</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="number" name="year" id="year" required/>
+                                </div>
+                                <button type="button" onclick="nextStep(2)">
+                                    @icons.Arrow("50px","-rotate-90 p-3 border border-black dark:border-white stroke-black dark:stroke-white rounded-full")
+                                </button>
+                            </div>
+                            <div class="w-full flex flex-col gap-5 form-step" id="step-2">
+                                <ul class="flex items-center w-full justify-between relative before:w-full before:h-3 before:absolute before:bg-[#e5e7eb] dark:before:bg-[#1b1b1b] before:-z-10 before:top-1/2 before:-translate-y-1/2 after:w-[60%] after:h-3 after:absolute transition after:bg-green-500 after:-z-10 after:top-1/2 after:-translate-y-1/2">
+                                    <li class=" py-2 px-4 text-2xl rounded-full bg-green-500 text-white">1</li>
+                                    <li class="poppins-regular py-2 px-4 text-2xl rounded-full bg-green-500 text-white">2</li>
+                                    <li class="poppins-regular py-2 px-4 text-2xl rounded-full bg-[#e5e7eb] dark:bg-[#1b1b1b]">3</li>
+                                </ul>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="mileage">kilométrage</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="number" name="mileage" id="mileage" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="transmission">Transmission</label>
+                                    <select class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" id="transmission" name="transmission" required>
+                                        <option value="automatique">Transmission automatique (AT)</option>
+                                        <option value="manuelle">Transmission manuelle (MT)</option>
+                                        <option value="manuelle automatisée">Transmission manuelle automatisée (AM)</option>
+                                        <option value="variation continue">Transmission à variation continue (CVT)</option>
+                                    </select>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="fuel_type">Type de carburant</label>
+                                    <select class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" id="fuel_type" name="fuel_type" required>
+                                        <option value="essence">Essence</option>
+                                        <option value="diesel">Diesel</option>
+                                        <option value="électrique ">Electrique</option>
+                                    </select>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="seats">sièges de voiture</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="number" name="seats" min="2" id="seats" required/>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <button type="button" onclick="prevStep(1)">@icons.Arrow("50px","rotate-90 p-3 border border-black  dark:border-white stroke-black dark:stroke-white rounded-full")</button>
+                                    <button type="button" onclick="nextStep(3)">@icons.Arrow("50px","-rotate-90 p-3 border border-black dark:border-white stroke-black dark:stroke-white rounded-full")</button>
+                                </div>
+                            </div>
+                            <div class="w-full flex flex-col gap-5 form-step" id="step-3">
+                                <ul class="flex items-center w-full justify-between relative before:w-full before:h-3 before:absolute before:bg-[#e5e7eb] dark:before:bg-[#1b1b1b] before:-z-10 before:top-1/2 before:-translate-y-1/2 after:w-[100%] after:h-3 after:absolute transition after:bg-green-500 after:-z-10 after:top-1/2 after:-translate-y-1/2">
+                                    <li class=" py-2 px-4 text-2xl rounded-full bg-green-500 text-white">1</li>
+                                    <li class="poppins-regular py-2 px-4 text-2xl rounded-full bg-green-500 text-white">2</li>
+                                    <li class="poppins-regular py-2 px-4 text-2xl rounded-full bg-green-500 text-white">3</li>
+                                </ul>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="daily_rate">Prix pour la journée <span class="text-gray-600 text-sm">(en Dh)</span></label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="number" name="daily_rate" id="daily_rate" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="color">Couleur</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="text" name="color" id="color" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="description">Description</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="text" name="description" id="description" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label for="file-upload" class="poppins-regular">Upload Images</label>
+                                    <div id="dropzone" class="dropzone dark:bg-[#0F0F0F] text-black dark:text-white mt-2 p-6 bg-white flex items-center justify-center">
+                                        <p class="poppins-regular text-gray-500">Drag and drop images here, or click to select files</p>
+                                        <input id="file-upload" name="images" type="file" class="hidden" accept="image/*" multiple required>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <button type="button" onclick="prevStep(2)">@icons.Arrow("50px","rotate-90 p-3 border border-black dark:border-white stroke-black dark:stroke-white rounded-full")</button>
+                                    <button type="submit" class="poppins-regular bg-[#508D4E] px-6 py-4 rounded-xl text-white hover:bg-green-700">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <script>
+                    function nextStep(step) {
+                        document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
+                        document.getElementById('step-' + step).classList.add('active');
+                    }
+
+                    function prevStep(step) {
+                        document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
+                        document.getElementById('step-' + step).classList.add('active');
+                    }
+                </script>
+                <script>
+                    const dropzone = document.getElementById('dropzone');
+                    const fileUpload = document.getElementById('file-upload');
+
+                    dropzone.addEventListener('click', () => fileUpload.click());
+
+                    dropzone.addEventListener('dragover', (event) => {
+                        event.preventDefault();
+                        dropzone.classList.add('dragover');
+                    });
+
+                    dropzone.addEventListener('dragleave', () => {
+                        dropzone.classList.remove('dragover');
+                    });
+
+                    dropzone.addEventListener('drop', (event) => {
+                        event.preventDefault();
+                        dropzone.classList.remove('dragover');
+                        fileUpload.files = event.dataTransfer.files;
+                        updateFileNames();
+                    });
+
+                    fileUpload.addEventListener('change', () => {
+                        updateFileNames();
+                    });
+
+                    function updateFileNames() {
+                        if (fileUpload.files.length > 0) {
+                            dropzone.querySelector('p').textContent = `${fileUpload.files.length} images sélectionner`;
+                        } else {
+                            dropzone.querySelector('p').textContent = 'Drag and drop images here, or click to select files';
+                        }
+                    }
+                </script>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+templ VoitureVendre(users struct{UserId uint;Username string; ProfileUrl string}){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel()
+        <div class="w-full md:max-w-[calc(100vw-272px)] md:min-h-[calc(100vh-63px)] flex flex-col items-center mx-auto justify-start p-4">
+            <div class="w-[74%] flex flex-col items-start justify-center gap-3 my-5">
+                <h1 class="poppins-semibold text-3xl">Créer une annonce</h1>
+                <div class="w-full mb-4">
+                    <ul class="flex gap-4">
+                      <a href="/register/agence"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black cursor-pointer dark:border-white">Creer agence</li></a>
+                        <a href="/register/voiturelocation"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black cursor-pointer dark:border-white">voiture de location</li></a>
+                        <a href="/register/voiturevendre"><li class="poppins-medium text-md py-1 border-b-2 border-black cursor-pointer dark:border-white">voiture a vendre</li></a>
+                        <a href="/register/voitureparts"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black cursor-pointer dark:border-white">Pièces de voiture</li></a>
+                    </ul>
+                </div>
+                <div class="w-[78%] h-full flex flex-col justify-start items-start gap-3">
+                    <div class="flex flex-col w-full items-start">
+                        <p class="poppins-regular text-sm">Remplissez le formulaire ci-dessous pour ajouter votre voiture à notre marché.</p>
+                    </div>
+                    <style>
+                    .form-step {
+                        display: none;
+                    }
+                    .form-step.active {
+                        display: flex;
+                    }
+                    .dropzone {
+                        border: 2px dashed #4A5568;
+                        border-radius: 0.375rem;
+                        padding: 2rem;
+                        text-align: center;
+                        cursor: pointer;
+                    }
+                    .dropzone.dragover {
+                        border-color: #3182CE;
+                        background-color: #EBF8FF;
+                    }
+                </style>
+                <div class="w-[78%] flex justify-start items-center">
+                    <div class="w-full flex flex-col gap-2 items-start">
+                        <form hx-post="/add-car-sales" id="multiStepForm" enctype="multipart/form-data" class="w-full flex flex-col fade-in justify-between items-start my-6" method="POST">
+                            <div class="w-full flex flex-col items-start gap-5 form-step active" id="step-1">
+                                <ul class="flex w-full items-center justify-between relative before:w-full before:h-3 before:absolute before:bg-[#e5e7eb] dark:before:bg-[#1b1b1b] before:-z-10 before:top-1/2 before:-translate-y-1/2 after:w-[30%] after:h-3 after:absolute transition after:bg-green-500 after:-z-10 after:top-1/2 after:-translate-y-1/2">
+                                    <li class=" py-2 px-4 text-2xl rounded-full bg-green-500 text-white">1</li>
+                                    <li class="poppins-regular py-2 px-4 text-2xl rounded-full bg-[#e5e7eb] dark:bg-[#1b1b1b]">2</li>
+                                    <li class="poppins-regular py-2 px-4 text-2xl rounded-full bg-[#e5e7eb] dark:bg-[#1b1b1b]">3</li>
+                                </ul>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="make">La Marque</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="text" name="make" id="make" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="model">Le Modèle</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="text" name="model" id="model" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="year">Année de la voiture</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="number" name="year" id="year" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="color">Couleur</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="text" name="color" id="color" required/>
+                                </div>
+                                <button type="button" onclick="nextStep(2)">
+                                    @icons.Arrow("50px","-rotate-90 p-3 border border-black dark:border-white stroke-black dark:stroke-white rounded-full")
+                                </button>
+                            </div>
+                            <div class="w-full flex flex-col gap-5 form-step" id="step-2">
+                                <ul class="flex items-center w-full justify-between relative before:w-full before:h-3 before:absolute before:bg-[#e5e7eb] dark:before:bg-[#1b1b1b] before:-z-10 before:top-1/2 before:-translate-y-1/2 after:w-[60%] after:h-3 after:absolute transition after:bg-green-500 after:-z-10 after:top-1/2 after:-translate-y-1/2">
+                                    <li class=" py-2 px-4 text-2xl rounded-full bg-green-500 text-white">1</li>
+                                    <li class="poppins-regular py-2 px-4 text-2xl rounded-full bg-green-500 text-white">2</li>
+                                    <li class="poppins-regular py-2 px-4 text-2xl rounded-full bg-[#e5e7eb] dark:bg-[#1b1b1b]">3</li>
+                                </ul>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="mileage">kilométrage</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="number" name="mileage" id="mileage" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="transmission">Transmission</label>
+                                    <select class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" id="transmission" name="transmission" required>
+                                        <option value="automatique">Transmission automatique (AT)</option>
+                                        <option value="manuelle">Transmission manuelle (MT)</option>
+                                        <option value="manuelle automatisée">Transmission manuelle automatisée (AM)</option>
+                                        <option value="variation continue">Transmission à variation continue (CVT)</option>
+                                    </select>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="fuel_type">Type de carburant</label>
+                                    <select class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" id="fuel_type" name="fuel_type" required>
+                                        <option value="essence">Essence</option>
+                                        <option value="diesel">Diesel</option>
+                                        <option value="électrique ">Electrique</option>
+                                    </select>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="seats">sièges de voiture</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="number" name="seats" min="2" id="seats" required/>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <button type="button" onclick="prevStep(1)">@icons.Arrow("50px","rotate-90 p-3 border border-black  dark:border-white stroke-black dark:stroke-white rounded-full")</button>
+                                    <button type="button" onclick="nextStep(3)">@icons.Arrow("50px","-rotate-90 p-3 border border-black dark:border-white stroke-black dark:stroke-white rounded-full")</button>
+                                </div>
+                            </div>
+                            <div class="w-full flex flex-col gap-5 form-step" id="step-3">
+                                <ul class="flex items-center w-full justify-between relative before:w-full before:h-3 before:absolute before:bg-[#e5e7eb] dark:before:bg-[#1b1b1b] before:-z-10 before:top-1/2 before:-translate-y-1/2 after:w-[100%] after:h-3 after:absolute transition after:bg-green-500 after:-z-10 after:top-1/2 after:-translate-y-1/2">
+                                    <li class=" py-2 px-4 text-2xl rounded-full bg-green-500 text-white">1</li>
+                                    <li class="poppins-regular py-2 px-4 text-2xl rounded-full bg-green-500 text-white">2</li>
+                                    <li class="poppins-regular py-2 px-4 text-2xl rounded-full bg-green-500 text-white">3</li>
+                                </ul>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="Price">Prix<span class="text-gray-600 text-sm">(en Dh)</span></label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="number" name="Price" id="Price" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="description">Description</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="text" name="description" id="description" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label for="file-upload" class="poppins-regular">Upload Images</label>
+                                    <div id="dropzone" class="dropzone dark:bg-[#0F0F0F] text-black dark:text-white mt-2 p-6 bg-white flex items-center justify-center">
+                                        <p class="poppins-regular text-gray-500">Drag and drop images here, or click to select files</p>
+                                        <input id="file-upload" name="images" type="file" class="hidden" accept="image/*" multiple required>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <button type="button" onclick="prevStep(2)">@icons.Arrow("50px","rotate-90 p-3 border border-black  dark:border-white stroke-black dark:stroke-white rounded-full")</button>
+                                    <button type="submit" class="poppins-regular bg-[#508D4E] px-6 py-4 rounded-xl text-white hover:bg-green-700">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <script>
+                    function nextStep(step) {
+                        document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
+                        document.getElementById('step-' + step).classList.add('active');
+                    }
+
+                    function prevStep(step) {
+                        document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
+                        document.getElementById('step-' + step).classList.add('active');
+                    }
+                </script>
+                <script>
+                    const dropzone = document.getElementById('dropzone');
+                    const fileUpload = document.getElementById('file-upload');
+
+                    dropzone.addEventListener('click', () => fileUpload.click());
+
+                    dropzone.addEventListener('dragover', (event) => {
+                        event.preventDefault();
+                        dropzone.classList.add('dragover');
+                    });
+
+                    dropzone.addEventListener('dragleave', () => {
+                        dropzone.classList.remove('dragover');
+                    });
+
+                    dropzone.addEventListener('drop', (event) => {
+                        event.preventDefault();
+                        dropzone.classList.remove('dragover');
+                        fileUpload.files = event.dataTransfer.files;
+                        updateFileNames();
+                    });
+
+                    fileUpload.addEventListener('change', () => {
+                        updateFileNames();
+                    });
+
+                    function updateFileNames() {
+                        if (fileUpload.files.length > 0) {
+                            dropzone.querySelector('p').textContent = `${fileUpload.files.length} images sélectionner`;
+                        } else {
+                            dropzone.querySelector('p').textContent = 'Drag and drop images here, or click to select files';
+                        }
+                    }
+                </script>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+templ VoitureParts(users struct{UserId uint;Username string; ProfileUrl string}){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel()
+        <style>
+            .dropzone {
+                border: 2px dashed #4A5568;
+                border-radius: 0.375rem;
+                padding: 2rem;
+                text-align: center;
+                cursor: pointer;
+            }
+            .dropzone.dragover {
+                border-color: #3182CE;
+                background-color: #EBF8FF;
+            }
+        </style>
+        <div class="w-full md:max-w-[calc(100vw-272px)] md:min-h-[calc(100vh-63px)] flex flex-col items-center mx-auto justify-start p-4">
+            <div class="w-[74%] flex flex-col items-start justify-center gap-3 my-5">
+                <h1 class="poppins-semibold text-3xl">Créer une annonce</h1>
+                <div class="w-full mb-4">
+                    <ul class="flex gap-4">
+                      <a href="/register/agence"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black cursor-pointer dark:border-white">Creer agence</li></a>
+                        <a href="/register/voiturelocation"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black cursor-pointer dark:border-white">voiture de location</li></a>
+                        <a href="/register/voiturevendre"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black cursor-pointer dark:border-white">voiture a vendre</li></a>
+                        <a href="/register/voitureparts"><li class="poppins-medium text-md py-1 border-b-2 border-black cursor-pointer dark:border-white">Pièces de voiture</li></a>
+                    </ul>
+                </div>
+                <div class="w-[78%] h-full flex flex-col justify-start items-start gap-3">
+                    <div class="flex flex-col w-full items-start">
+                        <p class="poppins-regular text-sm">Remplissez le formulaire ci-dessous pour ajouter vos pièces automobiles à notre marché.</p>
+                    </div>
+                    <div class="w-[78%] flex justify-center items-center ">
+                        <div class="w-full flex flex-col gap-2 items-start">
+                            <form hx-post="/add-car-parts" id="multiStepForm" enctype="multipart/form-data" class="w-full flex flex-col fade-in gap-5 justify-between items-start" method="POST">
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="Parts">Nom de votre piece</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="text" name="Parts" id="Parts" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="make">La Marque</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="text" name="make" id="make" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="etat">État</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="text" name="etat" id="etat" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="Description">Description</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="text" name="Description" id="Description" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="Price">Prix</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="text" name="Price" id="Price" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label class="poppins-regular" for="Stock">Stock</label>
+                                    <input class="border border-[#d5e0d5] focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm dark:bg-[#0F0F0F] text-black dark:text-white px-[20px] py-[18px] rounded-xl" type="text" name="Stock" id="Stock" required/>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label for="file-upload" class="poppins-regular">Upload Images</label>
+                                    <div id="dropzone" class="dropzone dark:bg-[#0F0F0F] text-black dark:text-white mt-2 p-6 bg-white flex items-center justify-center">
+                                        <p class="poppins-regular text-gray-500">Drag and drop images here, or click to select files</p>
+                                        <input id="file-upload" name="images" type="file" class="hidden" accept="image/*" multiple required>
+                                    </div>
+                                </div>
+                                <div class="w-full flex flex-col items-start gap-2">  
+                                    <button class="poppins-regular bg-green-500 px-4 py-[12px] w-1/2 rounded-xl text-white hover:bg-green-700" type="submit">Postez vos pièces</button>
+                                </div>
+                            </form>
+                        </div> 
+                        <script>
+                            const dropzone = document.getElementById('dropzone');
+                            const fileUpload = document.getElementById('file-upload');
+
+                            dropzone.addEventListener('click', () => fileUpload.click());
+
+                            dropzone.addEventListener('dragover', (event) => {
+                                event.preventDefault();
+                                dropzone.classList.add('dragover');
+                            });
+
+                            dropzone.addEventListener('dragleave', () => {
+                                dropzone.classList.remove('dragover');
+                            });
+
+                            dropzone.addEventListener('drop', (event) => {
+                                event.preventDefault();
+                                dropzone.classList.remove('dragover');
+                                fileUpload.files = event.dataTransfer.files;
+                                updateFileNames();
+                            });
+
+                            fileUpload.addEventListener('change', () => {
+                                updateFileNames();
+                            });
+
+                            function updateFileNames() {
+                                if (fileUpload.files.length > 0) {
+                                    dropzone.querySelector('p').textContent = `${fileUpload.files.length} images sélectionner`;
+                                } else {
+                                    dropzone.querySelector('p').textContent = 'Drag and drop images here, or click to select files';
+                                }
+                            }
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+templ VoitureRedirect(users struct{UserId uint;Username string; ProfileUrl string}){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel()
+        <div class="w-full md:max-w-[calc(100vw-272px)] md:min-h-[calc(100vh-63px)] flex flex-col items-center mx-auto justify-start p-4">
+            <div class="w-[74%] flex flex-col items-start justify-center gap-3 my-5">
+                <h1 class="poppins-semibold text-3xl">Créer une annonce</h1>
+                <div class="w-full mb-4">
+                    <ul class="flex gap-4 px-">
+                        <a href="/register/agence"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black cursor-pointer dark:border-white">Creer agence</li></a>
+                        <a href="/register/voiturelocation"><li class="poppins-medium text-md py-1 border-b-2 border-black cursor-pointer dark:border-white">voiture de location</li></a>
+                        <a href="/register/voiturevendre"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black cursor-pointer dark:border-white">voiture a vendre</li></a>
+                        <a href="/register/voitureparts"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black cursor-pointer dark:border-white">Pièces de voiture</li></a>
+                    </ul>
+                </div>
+                <div class="w-full h-full flex flex-col justify-start items-start gap-4">
+                    <h1 class="poppins-regular text-lg">Ajouter Une agence</h1>
+                    <div class="w-full flex items-start justify-start">
+                        <div class="flex flex-col items-start justify-start gap-2">
+                            <p class="poppins-regular text-lg font-semibold font-sans">vous devez créer votre première agence pour commencer à publier sur vos voitures</p>
+                            <a href="/register/agence" class="poppins-regular underline text-lg text-gray-600 dark:text-gray-300">créer une agence ici</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

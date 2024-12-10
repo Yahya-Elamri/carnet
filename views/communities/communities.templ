@@ -1,0 +1,389 @@
+package communities
+
+import (
+    "github.com/Yahya-Elamri/signeitfaster/views/components"
+    "github.com/Yahya-Elamri/signeitfaster/module"
+    "github.com/Yahya-Elamri/signeitfaster/views/icons"
+    "fmt"
+    "time"
+)
+
+func transform(jsonString string) []string {
+	cleanedString := strings.Trim(jsonString, "[]")
+	cleanedString = strings.ReplaceAll(cleanedString, `"`, "")
+	paths := strings.Split(cleanedString, ",")
+	return paths
+}
+
+css BackgroundImage(path , bgsize string){
+    width: 100%;
+    height: 100%;
+    background-image: { fmt.Sprintf("url('/assets%s')", path) };
+    background-size:  { fmt.Sprintf("%s", bgsize) };
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+
+templ CommunautesView(users struct{UserId uint;Username string; ProfileUrl string},communitiesCatergory map[string][]module.Communities){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel() 
+        <div class="w-full md:max-w-[calc(100vw-290px)] flex flex-row-reverse items-start justify-center gap-20 p-4">
+            <div class="w-[80%]">
+                <div class="w-full flex items-start justify-between">
+                    <div class="w-full flex flex-col items-start gap-2">
+                        <div class="w-full flex items-center gap-2 bg-white py-5 border-b dark:bg-[#0F0F0F] dark:border-[#3F3F3F] text-black dark:text-white">
+                            <h1 class="text-4xl poppins-semibold">Découvrir les communautés</h1>
+                        </div>
+                        <div class="flex flex-col items-start gap-6">
+                            for Category,communities := range communitiesCatergory {
+                                <div class="flex flex-col gap-3 items-start">
+                                    <h1 class="text-2xl poppins-semibold">{Category}</h1>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                        for _,com:= range communities{
+                                            <div class="w-[400px] rounded-xl p-4 border flex items-center justify-center dark:border-[#3F3F3F]">
+                                                <div class="w-full flex flex-col gap-2 items-start">
+                                                    <div class="w-full flex items-start justify-between">
+                                                        <a href={templ.URL(fmt.Sprintf("/communautes/%s",com.Name))} class="w-1/2 flex gap-2 items-center">
+                                                            <div class="w-[50px] h-[50px] bg-contain bg-center overflow-hidden rounded-full">
+                                                                <div class={BackgroundImage(transform(com.CommunitiesMedia)[0],"cover")}></div>
+                                                            </div>
+                                                            <div class="w-[73%]">
+                                                                <p class="w-[70%] poppins-regular truncate">{com.Name}</p>
+                                                                <div class="w-full overflow-hidden"><p >{fmt.Sprintf("%d",com.TotalJoined)} Membres</p></div>
+                                                            </div>
+                                                        </a>
+                                                        <div>
+                                                            <button href="#" class="border px-8 py-1 rounded-full border-gray-600 hover:bg-black hover:text-white transition duration-200 text-lg poppins-regular">join</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="w-full overflow-hidden">
+                                                        <p class="max-w-[350px] poppins-regular truncate">{com.Description}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+templ CommunautesOneView(users struct{UserId uint;Username string; ProfileUrl string},communities module.Communities,userCommunitie module.UserCommunities,posts []module.PostWithCommunity){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel() 
+        <div class="w-full md:max-w-[calc(100vw-290px)] flex items-start justify-center gap-16 p-4">
+            <div class="w-[72%]">
+                <div class="w-full">
+                    <div class="w-full h-[191px] flex items-center justify-center bg-contain bg-center overflow-hidden rounded-xl">
+                        //<img class="rounded-xl w-full h-full" src={fmt.Sprintf("/assets%s", transform(communities.CommunitiesBanner)[0])} />
+                        <div class={BackgroundImage(transform(communities.CommunitiesBanner)[0],"cover")}></div>
+                    </div>
+                    <div class="w-full bg-white dark:bg-[#0F0F0F] text-black dark:text-white rounded-xl py-4 px-2">
+                        <div class="flex justify-between items-start w-full">
+                            <div class="flex items-start gap-4 w-[60%]">
+                                <div class="w-[110px] h-[100px] max-h-[120px] flex items-center justify-center bg-cover bg-grey-700 bg-center overflow-hidden rounded-xl border-2 dark:border-[#3F3F3F]">
+                                    //<img class="block w-full m-0 overflow-hidden w-3xl h-3xl" src={fmt.Sprintf("/assets%s", transform(communities.CommunitiesMedia)[0])} />
+                                    <div class={BackgroundImage(transform(communities.CommunitiesMedia)[0],"cover")}></div>
+                                </div>
+                                <div class="w-[90%]">
+                                    <h1 class="poppins-semibold text-2xl capitalize">{communities.Name}</h1>
+                                    //<p class="poppins-regular text-md h-[45px] text-ellipsis">{communities.Description}</p>
+                                    <div class="flex items-start flex-col">
+                                        <p class="poppins-regular text-md">{fmt.Sprintf("%d", communities.TotalJoined)} Membres</p>
+                                        <p class="poppins-regular text-md">43 Posts</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button id="openDialog" class="border px-4 py-1 rounded-full border-black dark:border-[#3F3F3F] text-lg poppins-regular flex items-center gap-3">@icons.Plus("30px","fill-black dark:fill-white") Create Post</button>
+                                if (userCommunitie.UserId != 0){
+
+                                }else {
+                                    <form hx-post="/join-community" hx-target="this" hx-swap="outerHTML" method="POST">
+                                        <input type="hidden" name="community_id" value={fmt.Sprintf("%d", communities.CommunityID)} />
+                                        <input type="hidden" name="user_id" value={fmt.Sprintf("%d", users.UserId)} />
+                                        <button type="submit" class="border px-8 py-1 rounded-full border-black dark:border-[#3F3F3F] text-lg poppins-regular">Join</button>
+                                    </form>
+                                }
+                                <span class="border p-1 rounded-full border-black dark:border-[#3F3F3F] text-lg poppins-regular">@icons.More("30px","stroke-black dark:stroke-white")</span>
+                            </div>
+                            <div id="overlay" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden z-10 dark:bg-opacity-80"></div>
+                            <!-- Dialog -->
+                            <div id="dialog" class="fixed inset-0 flex items-center justify-center hidden z-20">
+                                <style>
+                                    .form-step {
+                                        display: none;
+                                    }
+                                    .form-step.active {
+                                        display: flex;
+                                    }
+                                    .dropzone {
+                                        border: 2px dashed #4A5568;
+                                        border-radius: 0.375rem;
+                                        padding: 2rem;
+                                        text-align: center;
+                                        cursor: pointer;
+                                    }
+                                    .dropzone.dragover {
+                                        border-color: #3182CE;
+                                        background-color: #EBF8FF;
+                                    }
+                                </style>
+                                <div class="bg-white dark:bg-[#060809] text-black dark:text-white p-5 rounded w-[500px] shadow-lg gap-4">
+                                    <div class="w-full flex items-center justify-between border-b dark:border-[#3F3F3F]">
+                                        <h1 class="w-full flex items-center justify-start text-2xl poppins-semibold">Créer une publication</h1>
+                                        <button id="closeDialog" class="px-4 py-2 rounded dark:bg-[#060809]">@icons.Close("30px","stroke-black dark:stroke-white")</button>
+                                    </div>
+                                    <form hx-post="/add-post" hx-target="this" hx-swap="outerHTML" enctype="multipart/form-data" class="w-full mt-3 flex flex-col fade-in gap-5 justify-between items-start" method="POST">
+                                        <input type="hidden" name="community_id" value={fmt.Sprintf("%d", communities.CommunityID)} />
+                                        <input type="hidden" name="user_id" value={fmt.Sprintf("%d", users.UserId)} />
+                                        //<input type="hidden" name="thread_id" value="0" />
+                                        <div class="w-full flex flex-col gap-2">
+                                            <textarea class="py-[18px] w-[90%] h-[190px] max-h-[190px] focus:border-none outline-none text-xl poppins-meduim dark:bg-[#060809]" id="message" name="content" rows="4" cols="50" maxlength="500" placeholder={fmt.Sprintf("Dire quelque chose , %s", users.Username)} oninput="updateCounter()" required></textarea>
+                                            <span class="char-counter w-full flex items-center justify-end" id="charCounter">0 / 500</span>
+                                        </div>
+                                        <div class="w-full flex flex-col gap-2">
+                                            <label for="file-upload1" class="text-xl poppins-meduim text-[#9DA4B0]">Photo / Video</label>
+                                            <div id="dropzone1" class="dropzone mt-2 p-6 bg-white dark:bg-[#060809] flex items-center justify-center">
+                                                <p class="poppins-regular text-gray-500">Drag and drop images here, or click to select files</p>
+                                                <input id="file-upload1" name="posts_media" type="file" class="hidden" multiple>
+                                            </div>
+                                        </div>
+                                        <div class="w-full flex flex-col items-start gap-2">  
+                                            <button class="poppins-regular bg-green-500 px-4 py-[12px] w-1/2 rounded-xl text-white hover:bg-green-700" type="submit">Publier</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <script>
+                                function updateCounter() {
+                                const textarea = document.getElementById('message');
+                                const counter = document.getElementById('charCounter');
+                                counter.textContent = `${textarea.value.length} / 500`;
+                                }
+                            </script>
+                            <script>
+                                function initializeDropzone(dropzoneId, fileUploadId) {
+                                    const dropzone = document.getElementById(dropzoneId);
+                                    const fileUpload = document.getElementById(fileUploadId);
+
+                                    dropzone.addEventListener('click', () => fileUpload.click());
+
+                                    dropzone.addEventListener('dragover', (event) => {
+                                        event.preventDefault();
+                                        dropzone.classList.add('dragover');
+                                    });
+
+                                    dropzone.addEventListener('dragleave', () => {
+                                        dropzone.classList.remove('dragover');
+                                    });
+
+                                    dropzone.addEventListener('drop', (event) => {
+                                        event.preventDefault();
+                                        dropzone.classList.remove('dragover');
+                                        fileUpload.files = event.dataTransfer.files;
+                                        updateFileNames(dropzone, fileUpload);
+                                    });
+
+                                    fileUpload.addEventListener('change', () => {
+                                        updateFileNames(dropzone, fileUpload);
+                                    });
+                                }
+                                function updateFileNames(dropzone, fileUpload) {
+                                    if (fileUpload.files.length > 0) {
+                                        dropzone.querySelector('p').textContent = `${fileUpload.files.length} images sélectionnées`;
+                                    } else {
+                                        dropzone.querySelector('p').textContent = 'Drag and drop images here, or click to select files';
+                                    }
+                                }
+                                initializeDropzone('dropzone1', 'file-upload1');
+                                initializeDropzone('dropzone2', 'file-upload2');
+                            </script>
+                            <script>
+                                const openDialogBtn = document.getElementById('openDialog');
+                                const closeDialogBtn = document.getElementById('closeDialog');
+                                const dialog = document.getElementById('dialog');
+                                const overlay = document.getElementById('overlay');
+
+                                openDialogBtn.addEventListener('click', () => {
+                                    dialog.classList.remove('hidden');
+                                    overlay.classList.remove('hidden');
+                                });
+
+                                closeDialogBtn.addEventListener('click', () => {
+                                    dialog.classList.add('hidden');
+                                    overlay.classList.add('hidden');
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full flex items-start justify-between">
+                    <div class="w-[68%] min-h-[500px]">
+                        for _,post := range posts {
+                            <div class="w-full border-t dark:border-[#3F3F3F] flex flex-col items-start p-4 gap-3">
+                                <div class="flex w-full gap-2 items-center">
+                                    <div class="w-[46px] h-[46px] bg-contain bg-center overflow-hidden rounded-full">
+                                        <div class={BackgroundImage(transform(post.ProfileUrl)[0],"cover")}></div>
+                                    </div>
+                                    <div>
+                                        <p class="poppins-regular">{post.Username}</p>
+                                        {{
+                                        timestampStr := string(post.CreatedAt)
+                                        layout := "2006-01-02 15:04:05"
+                                        parsedTime, err := time.Parse(layout, timestampStr)
+                                        if err != nil {
+                                            fmt.Println("Error parsing time:", err)
+                                            return
+                                        }
+                                        location, err := time.LoadLocation("Africa/Casablanca")
+                                        now := time.Now().In(location)
+                                        diff := now.Sub(parsedTime)
+                                        if diff < 0 {
+                                            diff = 0 // Prevent negative times, handle future timestamps
+                                        }
+                                    }}
+                                        <p class="poppins-regular flex gap-1 items-center">@icons.Clock("20px","") il y a
+                                            switch {
+                                                case diff < time.Minute:
+                                                    if int(diff.Seconds()) == 1 {
+                                                        <span>{"1 second"}</span>
+                                                    }else{
+                                                    <span>{fmt.Sprintf("%d seconds", int(diff.Seconds()))}</span>}
+                                                case diff < time.Hour:
+                                                    if int(diff.Minutes()) == 1 {
+                                                        <span>{"1 minute"}</span>
+                                                    }else{
+                                                    <span>{fmt.Sprintf("%d minutes", int(diff.Minutes()))}</span>}
+                                                case diff < time.Hour*24:
+                                                    if int(diff.Hours()) == 1 {
+                                                        <span>{"1 heure"}</span>
+                                                    }else{
+                                                    <span>{fmt.Sprintf("%d heures", int(diff.Hours()))}</span>}
+                                                case diff < time.Hour*24*30:
+                                                    if int(diff.Hours() / 24) == 1 {
+                                                        <span>{"1 jour"}</span>
+                                                    }else{
+                                                    <span>{fmt.Sprintf("%d jours", int(diff.Hours() / 24))}</span>}
+                                                case diff < time.Hour*24*365:
+                                                    if int(diff.Hours() / 24 / 30) == 1 {
+                                                        <span>{"1 mois"}</span>
+                                                    }else{
+                                                    <span>{fmt.Sprintf("%d mois", int(diff.Hours() / 24 / 30))}</span>}
+                                                default:
+                                                    if int(diff.Hours() / 24 / 365) == 1 {
+                                                        <span>{"1 année"}</span>
+                                                    }else{
+                                                    <span>{fmt.Sprintf("%d années", int(diff.Hours() / 24 / 365))}</span>}
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="w-full flex flex-col items-start gap-3">
+                                    <p class="poppins-regular text-lg text-ellipsis">{post.Content}</p>
+                                    <div class="w-full max-h-[600px] flex items-center justify-center bg-contain bg-center overflow-hidden rounded-xl">
+                                        if transform(post.PostsMediaExtention)[0] == ".mp4"{
+                                            // <iframe class="w-full aspect-video" src={fmt.Sprintf("/assets%s",transform(post.PostsMedia)[0])} frameborder="0" allowfullscreen></iframe>
+                                            <div class="flex w-full justify-center items-center p-4">
+                                                <div class="relative w-full bg-black rounded-lg overflow-hidden">
+                                                    <!-- Video Container -->
+                                                    <video id="custom-video-player" class="w-full h-full" preload="metadata" autoplay muted controls>
+                                                        <source src={fmt.Sprintf("/assets%s",transform(post.PostsMedia)[0])} type="video/mp4">
+                                                        Your browser does not support the video tag.
+                                                    </video>
+                                                </div>
+                                                <script>
+                                                    const videoPlayer = document.getElementById('custom-video-player');
+                                                    videoPlayer.addEventListener('click', () => {
+                                                        if (videoPlayer.paused) {
+                                                            videoPlayer.play();
+                                                        } else {
+                                                            videoPlayer.pause();
+                                                        }
+                                                    });
+                                                </script>
+                                            </div>
+                                        }else {
+                                            <div class="w-full h-[600px] flex items-center justify-center bg-contain bg-center overflow-hidden rounded-xl">
+                                                <div class={BackgroundImage(transform(post.PostsMedia)[0],"cover")}></div>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="flex items-center justify-start w-full gap-3">
+                                        if post.UserVote == 0 {
+                                            <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                                <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                                    <input type="hidden" name="vote" value="upvote">
+                                                    <button type="submit">
+                                                        @icons.Up("28px","stroke-gray-800 dark:stroke-white hover:stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                                    </button>
+                                                </form>
+                                                <p class="poppins-regular text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                                <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                                    <input type="hidden" name="vote" value="downvote">
+                                                    <button type="submit">
+                                                        @icons.Up("28px","rotate-180 cursor-pointer stroke-gray-800 dark:stroke-white hover:stroke-red-500 transition-colors duration-200")
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        }else if post.UserVote == 1 {
+                                            <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                                <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                                    <input type="hidden" name="vote" value="upvote">
+                                                    <button type="submit">
+                                                        @icons.Up("28px","stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                                    </button>
+                                                </form>
+                                                <p class="poppins-regular text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                                <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                                    <input type="hidden" name="vote" value="downvote">
+                                                    <button type="submit">
+                                                        @icons.Up("28px","rotate-180 cursor-pointer stroke-gray-800 dark:stroke-white hover:stroke-red-500 transition-colors duration-200")
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        }else {
+                                            <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                                <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                                    <input type="hidden" name="vote" value="upvote">
+                                                    <button type="submit">
+                                                        @icons.Up("28px","stroke-gray-800 dark:stroke-white hover:stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                                    </button>
+                                                </form>
+                                                <p class="poppins-regular text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                                <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                                    <input type="hidden" name="vote" value="downvote">
+                                                    <button type="submit">
+                                                        @icons.Up("28px","rotate-180 cursor-pointer stroke-red-500 transition-colors duration-200")
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        }
+                                        <div class="bg-[#eaedef] dark:bg-[#060809] text-black dark:text-white hover:bg-gray-200 rounded-full p-2 flex items-center gap-1 justify-center">
+                                            @icons.Comment("26px","hover:stroke-black stroke-gray-800 dark:stroke-white transition-colors duration-300 cursor-pointer") Commenter
+                                        </div>
+                                        <div class="bg-[#eaedef] hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white rounded-full p-2 flex items-center gap-1 justify-center">
+                                            @icons.Share("28px","hover:stroke-black stroke-gray-800 dark:stroke-white transition-colors duration-300 cursor-pointer") Partager
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="w-[30%] bg-[#eaedef] p-4 rounded-xl dark:bg-[#060809] text-black dark:text-white sticky top-[75px]">
+                        <h1 class="poppins-semibold text-2xl capitalize">{communities.Name}</h1>
+                        <p class="poppins-regular text-md text-ellipsis">{communities.Description}</p>
+                    </div> 
+                </div>
+            </div>
+        </div>
+    </div>
+}

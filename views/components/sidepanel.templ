@@ -1,0 +1,108 @@
+package components 
+
+import (
+    "github.com/Yahya-Elamri/signeitfaster/views/icons"
+)
+
+templ SidePanel(){
+    <div class="w-full flex-shrink-0 w-[272px] z-10 sticky top-[63px] max-h-[93vh] border-r dark:border-[#3F3F3F] px-4 flex flex-col gap-5 bg-[#ffffff] dark:bg-[#0F0F0F] text-black dark:text-white">
+        <style>
+            .sidebar-dropdown-content {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.4s ease-in-out;
+                box-shadow : 0 0 0 0;
+            }
+
+            .sidebar-dropdown-content.show {
+                max-height: 700px;
+            }
+        </style>
+        <ul class="flex flex-col items-start justify-start w-full mt-5">
+            <a href="/" class="hover:bg-[#f1f1f1] dark:hover:bg-[#060809] rounded-md w-full px-2 py-3">
+                <li class="poppins-regular flex items-center gap-3">
+                    @icons.Home("25px","fill-dark dark:fill-white")
+                    Home
+                </li>
+            </a>
+            <a href="/tendance" class="hover:bg-[#f1f1f1] dark:hover:bg-[#060809] rounded-md w-full px-2 py-3">
+                <li class="poppins-regular flex items-center gap-3"> 
+                    @icons.Fire("25px","fill-black dark:fill-white")
+                    Tendance
+                </li>
+            </a>
+            <a href="/communautes" class="hover:bg-[#f1f1f1] dark:hover:bg-[#060809] rounded-md w-full px-2 py-3">
+                <li class="poppins-regular flex items-center gap-3">
+                    @icons.Group("25px","fill-black dark:fill-white")
+                    Communautés
+                </li>
+            </a>
+        </ul>
+        <ul class="">
+            <li class="dropdown relative border-t dark:border-[#3F3F3F]">
+                <div class="block px-2 py-2 cursor-pointer text-gray-800 flex items-center justify-between mt-2" onclick="toggleSidebarDropdown(event, 'sidepanel-dropdown')">
+                    <span class="flex poppins-regular items-center gap-2 text-black dark:text-white">@icons.Market("28px","fill-dark dark:fill-white") MarketPlace </span>
+                    @icons.Arrow("18px","stroke-black dark:stroke-white") 
+                </div>
+                <ul id="sidepanel-dropdown" class="sidebar-dropdown-content bg-white dark:bg-[#0F0F0F] text-black dark:text-white drop-shadow-none mb-2">
+                    <div class="flex flex-col gap-1 px-4 drop-shadow-none">
+                        <a href="/marketplace" class="hover:bg-[#f1f1f1] dark:hover:bg-[#060809] rounded-md w-full px-2 py-3">
+                            <p class="poppins-regular text-md">Home</p>
+                        </a>
+                        <a href="/marketplace/voituresales" class="hover:bg-[#f1f1f1] dark:hover:bg-[#060809] rounded-md w-full px-2 py-3">  
+                            <p class="poppins-regular text-md">Voitures à vendre</p>
+                        </a>
+                        <a href="/marketplace/voiturelocation" class="hover:bg-[#f1f1f1] dark:hover:bg-[#060809] rounded-md w-full px-2 py-3">
+                            <p class="poppins-regular text-md">Location des voiture</p>
+                        </a>
+                        <a href="/marketplace/voitureparts" class="hover:bg-[#f1f1f1] dark:hover:bg-[#060809] rounded-md w-full px-2 py-3">   
+                            <p class="poppins-regular text-md">Pièces de voiture</p>
+                        </a>
+                    </div>
+                </ul>
+            </li>
+            <li class="dropdown relative border-y dark:border-[#3F3F3F]">
+                <div hx-get="/joined-communautes" hx-target="#data-container" hx-indicator="#loading-spinner" class="block px-2 py-2 cursor-pointer text-gray-800 flex items-center justify-between mt-2" onclick="toggleSidebarDropdown(event, 'sidepanel-dropdown2')">
+                    <span class="flex poppins-regular items-center gap-2 text-black dark:text-white">@icons.Group("28px","fill-black dark:fill-white") Mes Communautés </span>
+                    @icons.Arrow("18px","stroke-black dark:stroke-white") 
+                </div>
+                <ul id="sidepanel-dropdown2" class="sidebar-dropdown-content bg-white dark:bg-[#0F0F0F] text-black dark:text-white drop-shadow-none mb-2">
+                    <div class="flex flex-col gap-1 px-4 drop-shadow-none">
+                        <a href="/communautes/creer" class="hover:bg-[#f1f1f1] dark:hover:bg-[#060809] rounded-md w-full px-2 py-3">
+                            <p class="poppins-regular text-md">Créer Communautés</p>
+                        </a>
+                        <style>
+                            .my-indicator{
+                                display:none;
+                            }
+                            .htmx-request .my-indicator{
+                                display:none;
+                            }
+                            .htmx-request.my-indicator{
+                                display:none;
+                            }
+                        </style>
+                        <div id="data-container"></div>
+                        <div class="w-full flex items-center justify-center">
+                            <div id="loading-spinner" class="htmx-indicator">
+                                <div class="spinner animate-spin rounded-full h-5 w-5 border-2 border-blue-500"></div>
+                            </div>
+                        </div>
+                    </div>
+                </ul>
+            </li>
+        </ul>
+        <script>
+            function toggleSidebarDropdown(event, dropdownId) {
+                event.preventDefault();
+                const dropdown = document.getElementById(dropdownId);
+
+                if (dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                } else {
+                    dropdown.classList.add('show');
+                }
+            }
+        </script>
+    </div>
+}

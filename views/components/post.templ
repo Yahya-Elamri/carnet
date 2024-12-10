@@ -1,0 +1,584 @@
+package components
+
+import (
+    "github.com/Yahya-Elamri/signeitfaster/module"
+    "github.com/Yahya-Elamri/signeitfaster/views/icons"
+    "fmt"
+    "time"
+    "strings"
+)
+
+func transform(jsonString string) []string {
+	cleanedString := strings.Trim(jsonString, "[]")
+	cleanedString = strings.ReplaceAll(cleanedString, `"`, "")
+	paths := strings.Split(cleanedString, ",")
+	return paths
+}
+
+templ Post(post module.PostWithCommunity){
+    <div class="w-full">
+        <div class=" w-full border-b dark:border-[#3F3F3F] dark:border-[#3F3F3F] py-2">
+            <div class="w-full flex flex-col items-start p-4 gap-3 transition duration-300 ease-in-out hover:bg-[#fafbfc] dark:hover:bg-[#101010] rounded-xl">
+                <a href={templ.URL(fmt.Sprintf("/communautes/%s",post.CommunityName))} class="flex w-full gap-2 items-center">
+                    <div class="w-[46px] h-[46px] bg-contain bg-center overflow-hidden rounded-full">
+                        <div class={BackgroundImage(transform(post.CommunityMedia)[0],"0.75rem")}></div>
+                    </div>
+                    <div>
+                        <p class="break-words poppins-regular text-black dark:text-white">{post.CommunityName}</p>
+                        {{
+                        timestampStr := string(post.CreatedAt)
+                        layout := "2006-01-02 15:04:05"
+                        parsedTime, err := time.Parse(layout, timestampStr)
+                        if err != nil {
+                            fmt.Println("Error parsing time:", err)
+                            return
+                        }
+                        location, err := time.LoadLocation("Africa/Casablanca")
+                        now := time.Now().In(location)
+                        diff := now.Sub(parsedTime)
+                        if diff < 0 {
+                            diff = 0 // Prevent negative times, handle future timestamps
+                        }
+                    }}
+                        <p class="break-words poppins-regular text-black dark:text-white flex gap-1 items-center">@icons.Clock("20px","") il y a
+                            switch {
+                                case diff < time.Minute:
+                                    if int(diff.Seconds()) == 1 {
+                                        <span>{"1 second"}</span>
+                                    }else{
+                                    <span>{fmt.Sprintf("%d seconds", int(diff.Seconds()))}</span>}
+                                case diff < time.Hour:
+                                    if int(diff.Minutes()) == 1 {
+                                        <span>{"1 minute"}</span>
+                                    }else{
+                                    <span>{fmt.Sprintf("%d minutes", int(diff.Minutes()))}</span>}
+                                case diff < time.Hour*24:
+                                    if int(diff.Hours()) == 1 {
+                                        <span>{"1 heure"}</span>
+                                    }else{
+                                    <span>{fmt.Sprintf("%d heures", int(diff.Hours()))}</span>}
+                                case diff < time.Hour*24*30:
+                                    if int(diff.Hours() / 24) == 1 {
+                                        <span>{"1 jour"}</span>
+                                    }else{
+                                    <span>{fmt.Sprintf("%d jours", int(diff.Hours() / 24))}</span>}
+                                case diff < time.Hour*24*365:
+                                    if int(diff.Hours() / 24 / 30) == 1 {
+                                        <span>{"1 mois"}</span>
+                                    }else{
+                                    <span>{fmt.Sprintf("%d mois", int(diff.Hours() / 24 / 30))}</span>}
+                                default:
+                                    if int(diff.Hours() / 24 / 365) == 1 {
+                                        <span>{"1 année"}</span>
+                                    }else{
+                                    <span>{fmt.Sprintf("%d années", int(diff.Hours() / 24 / 365))}</span>}
+                            }
+                        </p>
+                    </div>
+                </a>
+                <div class="w-full flex flex-col items-start gap-3">
+                    <p class="w-full break-words poppins-regular text-black dark:text-white text-lg text-ellipsis">{post.Content}</p>
+                    <div class="w-full max-h-[600px] flex items-center justify-center bg-contain bg-center overflow-hidden rounded-xl">
+                        if transform(post.PostsMediaExtention)[0] != "null" {
+                            if transform(post.PostsMediaExtention)[0] == ".mp4"{
+                                // <iframe class="w-full aspect-video" src={fmt.Sprintf("/assets%s",transform(post.PostsMedia)[0])} frameborder="0" allowfullscreen></iframe>
+                                <div class="flex w-full justify-center items-center p-4">
+                                    <div class="relative w-full bg-black rounded-lg overflow-hidden">
+                                        <!-- Video Container -->
+                                        <video id="custom-video-player" class="w-full h-full" preload="metadata" autoplay muted controls>
+                                            <source src={fmt.Sprintf("/assets%s",transform(post.PostsMedia)[0])} type="video/mp4">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    </div>
+                                    <script>
+                                        const videoPlayer = document.getElementById('custom-video-player');
+                                        videoPlayer.addEventListener('click', () => {
+                                            if (videoPlayer.paused) {
+                                                videoPlayer.play();
+                                            } else {
+                                                videoPlayer.pause();
+                                            }
+                                        });
+                                    </script>
+                                </div>
+                            }else {
+                                <div class="w-full h-[600px] flex items-center justify-center bg-contain bg-center overflow-hidden rounded-xl">
+                                    <div class={BackgroundImage(transform(post.PostsMedia)[0],"0.75rem")}></div>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="flex items-center justify-start w-full gap-3">
+                        if post.UserVote == 0 {
+                            <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                    <input type="hidden" name="vote" value="upvote">
+                                    <button type="submit">
+                                        @icons.Up("28px","stroke-gray-800 dark:stroke-white hover:stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                    </button>
+                                </form>
+                                <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                    <input type="hidden" name="vote" value="downvote">
+                                    <button type="submit">
+                                        @icons.Up("28px","rotate-180 cursor-pointer stroke-gray-800 dark:stroke-white hover:stroke-red-500 transition-colors duration-200")
+                                    </button>
+                                </form>
+                            </div>
+                        }else if post.UserVote == 1 {
+                            <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                    <input type="hidden" name="vote" value="upvote">
+                                    <button type="submit">
+                                        @icons.Up("28px","stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                    </button>
+                                </form>
+                                <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                    <input type="hidden" name="vote" value="downvote">
+                                    <button type="submit">
+                                        @icons.Up("28px","rotate-180 cursor-pointer stroke-gray-800 dark:stroke-white hover:stroke-red-500 transition-colors duration-200")
+                                    </button>
+                                </form>
+                            </div>
+                        }else {
+                            <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                    <input type="hidden" name="vote" value="upvote">
+                                    <button type="submit">
+                                        @icons.Up("28px","stroke-gray-800 dark:stroke-white hover:stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                    </button>
+                                </form>
+                                <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                    <input type="hidden" name="vote" value="downvote">
+                                    <button type="submit">
+                                        @icons.Up("28px","rotate-180 cursor-pointer stroke-red-500 transition-colors duration-200")
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                        <a href={templ.URL(fmt.Sprintf("/p/%s/comments/%d",post.CommunityName,post.PostID))} class="bg-[#eaedef] dark:bg-[#060809] text-black dark:text-white hover:bg-gray-200 rounded-full p-2 flex items-center gap-1 justify-center">
+                            @icons.Comment("26px","hover:stroke-black stroke-gray-800 dark:stroke-white transition-colors duration-300") Commenter
+                        </a>
+                        <div class="bg-[#eaedef] hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white rounded-full p-2 flex items-center gap-1 justify-center">
+                            @icons.Share("28px","hover:stroke-black stroke-gray-800 dark:stroke-white transition-colors duration-300 cursor-pointer") Partager
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+templ Thread(post module.ThreadWithCommunity){
+    <div class="w-full">
+        <div class=" w-full border-b dark:border-[#3F3F3F] dark:border-[#3F3F3F] py-2">
+            <div class="w-full flex flex-col items-start p-4 gap-3 transition duration-300 ease-in-out hover:bg-[#fafbfc] dark:hover:bg-[#101010] rounded-xl">
+                <a href={templ.URL(fmt.Sprintf("/communautes/%s",post.CommunityName))} class="flex w-full gap-2 items-center">
+                    <div class="w-[46px] h-[46px] bg-contain bg-center overflow-hidden rounded-full">
+                        <div class={BackgroundImage(transform(post.CommunityMedia)[0],"0.75rem")}></div>
+                    </div>
+                    <div>
+                        <p class="break-words poppins-regular text-black dark:text-white">{post.CommunityName}</p>
+                        {{
+                        timestampStr := string(post.CreatedAt)
+                        layout := "2006-01-02 15:04:05"
+                        parsedTime, err := time.Parse(layout, timestampStr)
+                        if err != nil {
+                            fmt.Println("Error parsing time:", err)
+                            return
+                        }
+                        location, err := time.LoadLocation("Africa/Casablanca")
+                        now := time.Now().In(location)
+                        diff := now.Sub(parsedTime)
+                        if diff < 0 {
+                            diff = 0 // Prevent negative times, handle future timestamps
+                        }
+                    }}
+                        <p class="w-full break-words poppins-regular text-black dark:text-white flex gap-1 items-center">@icons.Clock("20px","") il y a
+                            switch {
+                                case diff < time.Minute:
+                                    if int(diff.Seconds()) == 1 {
+                                        <span>{"1 second"}</span>
+                                    }else{
+                                    <span>{fmt.Sprintf("%d seconds", int(diff.Seconds()))}</span>}
+                                case diff < time.Hour:
+                                    if int(diff.Minutes()) == 1 {
+                                        <span>{"1 minute"}</span>
+                                    }else{
+                                    <span>{fmt.Sprintf("%d minutes", int(diff.Minutes()))}</span>}
+                                case diff < time.Hour*24:
+                                    if int(diff.Hours()) == 1 {
+                                        <span>{"1 heure"}</span>
+                                    }else{
+                                    <span>{fmt.Sprintf("%d heures", int(diff.Hours()))}</span>}
+                                case diff < time.Hour*24*30:
+                                    if int(diff.Hours() / 24) == 1 {
+                                        <span>{"1 jour"}</span>
+                                    }else{
+                                    <span>{fmt.Sprintf("%d jours", int(diff.Hours() / 24))}</span>}
+                                case diff < time.Hour*24*365:
+                                    if int(diff.Hours() / 24 / 30) == 1 {
+                                        <span>{"1 mois"}</span>
+                                    }else{
+                                    <span>{fmt.Sprintf("%d mois", int(diff.Hours() / 24 / 30))}</span>}
+                                default:
+                                    if int(diff.Hours() / 24 / 365) == 1 {
+                                        <span>{"1 année"}</span>
+                                    }else{
+                                    <span>{fmt.Sprintf("%d années", int(diff.Hours() / 24 / 365))}</span>}
+                            }
+                        </p>
+                    </div>
+                </a>
+                <div class="w-full flex flex-col items-start gap-3">
+                    <p class="w-full break-words poppins-regular text-black dark:text-white text-lg text-ellipsis">{post.Content}</p>
+                    <div class="flex items-center justify-start w-full gap-3">
+                        if post.UserVote == 0 {
+                            <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                <form hx-post={fmt.Sprintf("/thread/%d/vote", post.ThreadID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                    <input type="hidden" name="vote" value="upvote">
+                                    <button type="submit">
+                                        @icons.Up("28px","stroke-gray-800 dark:stroke-white hover:stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                    </button>
+                                </form>
+                                <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                <form hx-post={fmt.Sprintf("/thread/%d/vote", post.ThreadID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                    <input type="hidden" name="vote" value="downvote">
+                                    <button type="submit">
+                                        @icons.Up("28px","rotate-180 cursor-pointer stroke-gray-800 dark:stroke-white hover:stroke-red-500 transition-colors duration-200")
+                                    </button>
+                                </form>
+                            </div>
+                        }else if post.UserVote == 1 {
+                            <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                <form hx-post={fmt.Sprintf("/thread/%d/vote", post.ThreadID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                    <input type="hidden" name="vote" value="upvote">
+                                    <button type="submit">
+                                        @icons.Up("28px","stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                    </button>
+                                </form>
+                                <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                <form hx-post={fmt.Sprintf("/thread/%d/vote", post.ThreadID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                    <input type="hidden" name="vote" value="downvote">
+                                    <button type="submit">
+                                        @icons.Up("28px","rotate-180 cursor-pointer stroke-gray-800 dark:stroke-white hover:stroke-red-500 transition-colors duration-200")
+                                    </button>
+                                </form>
+                            </div>
+                        }else {
+                            <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                <form hx-post={fmt.Sprintf("/thread/%d/vote", post.ThreadID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                    <input type="hidden" name="vote" value="upvote">
+                                    <button type="submit">
+                                        @icons.Up("28px","stroke-gray-800 dark:stroke-white hover:stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                    </button>
+                                </form>
+                                <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                <form hx-post={fmt.Sprintf("/thread/%d/vote", post.ThreadID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                    <input type="hidden" name="vote" value="downvote">
+                                    <button type="submit">
+                                        @icons.Up("28px","rotate-180 cursor-pointer stroke-red-500 transition-colors duration-200")
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                        <a href={templ.URL(fmt.Sprintf("/t/%s/comments/%d",post.CommunityName,post.ThreadID))} class="bg-[#eaedef] dark:bg-[#060809] text-black dark:text-white hover:bg-gray-200 rounded-full p-2 flex items-center gap-1 justify-center">
+                            @icons.Comment("26px","hover:stroke-black stroke-gray-800 dark:stroke-white transition-colors duration-300") Commenter
+                        </a>
+                        <div class="bg-[#eaedef] hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white rounded-full p-2 flex items-center gap-1 justify-center">
+                            @icons.Share("28px","hover:stroke-black stroke-gray-800 dark:stroke-white transition-colors duration-300 cursor-pointer") Partager
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+templ ThreadsComponents(posts []module.ThreadWithCommunity){
+    <div class="w-full">
+        for _,post := range posts {
+            <div class=" w-full border-b dark:border-[#3F3F3F] dark:border-[#3F3F3F] py-2">
+                <div class="w-full flex flex-col items-start p-4 gap-3 transition duration-300 ease-in-out hover:bg-[#fafbfc] dark:hover:bg-[#101010] rounded-xl">
+                    <a href={templ.URL(fmt.Sprintf("/communautes/%s",post.CommunityName))} class="flex w-full gap-2 items-center">
+                        <div class="w-[46px] h-[46px] bg-contain bg-center overflow-hidden rounded-full">
+                            <div class={BackgroundImage(transform(post.CommunityMedia)[0],"0.75rem")}></div>
+                        </div>
+                        <div>
+                            <p class="break-words poppins-regular text-black dark:text-white">{post.CommunityName}</p>
+                            {{
+                            timestampStr := string(post.CreatedAt)
+                            layout := "2006-01-02 15:04:05"
+                            parsedTime, err := time.Parse(layout, timestampStr)
+                            if err != nil {
+                                fmt.Println("Error parsing time:", err)
+                                return
+                            }
+                            location, err := time.LoadLocation("Africa/Casablanca")
+                            now := time.Now().In(location)
+                            diff := now.Sub(parsedTime)
+                            if diff < 0 {
+                                diff = 0 // Prevent negative times, handle future timestamps
+                            }
+                        }}
+                            <p class="break-words poppins-regular text-black dark:text-white flex gap-1 items-center">@icons.Clock("20px","") il y a
+                                switch {
+                                    case diff < time.Minute:
+                                        if int(diff.Seconds()) == 1 {
+                                            <span>{"1 second"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d seconds", int(diff.Seconds()))}</span>}
+                                    case diff < time.Hour:
+                                        if int(diff.Minutes()) == 1 {
+                                            <span>{"1 minute"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d minutes", int(diff.Minutes()))}</span>}
+                                    case diff < time.Hour*24:
+                                        if int(diff.Hours()) == 1 {
+                                            <span>{"1 heure"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d heures", int(diff.Hours()))}</span>}
+                                    case diff < time.Hour*24*30:
+                                        if int(diff.Hours() / 24) == 1 {
+                                            <span>{"1 jour"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d jours", int(diff.Hours() / 24))}</span>}
+                                    case diff < time.Hour*24*365:
+                                        if int(diff.Hours() / 24 / 30) == 1 {
+                                            <span>{"1 mois"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d mois", int(diff.Hours() / 24 / 30))}</span>}
+                                    default:
+                                        if int(diff.Hours() / 24 / 365) == 1 {
+                                            <span>{"1 année"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d années", int(diff.Hours() / 24 / 365))}</span>}
+                                }
+                            </p>
+                        </div>
+                    </a>
+                    <div class="w-full flex flex-col items-start gap-3">
+                        <p class="w-full break-words poppins-regular text-black dark:text-white text-lg text-ellipsis">{post.Content}</p>
+                        <div class="flex items-center justify-start w-full gap-3">
+                            if post.UserVote == 0 {
+                                <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                    <form hx-post={fmt.Sprintf("/thread/%d/vote", post.ThreadID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="upvote">
+                                        <button type="submit">
+                                            @icons.Up("28px","stroke-gray-800 dark:stroke-white hover:stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                        </button>
+                                    </form>
+                                    <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                    <form hx-post={fmt.Sprintf("/thread/%d/vote", post.ThreadID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="downvote">
+                                        <button type="submit">
+                                            @icons.Up("28px","rotate-180 cursor-pointer stroke-gray-800 dark:stroke-white hover:stroke-red-500 transition-colors duration-200")
+                                        </button>
+                                    </form>
+                                </div>
+                            }else if post.UserVote == 1 {
+                                <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                    <form hx-post={fmt.Sprintf("/thread/%d/vote", post.ThreadID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="upvote">
+                                        <button type="submit">
+                                            @icons.Up("28px","stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                        </button>
+                                    </form>
+                                    <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                    <form hx-post={fmt.Sprintf("/thread/%d/vote", post.ThreadID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="downvote">
+                                        <button type="submit">
+                                            @icons.Up("28px","rotate-180 cursor-pointer stroke-gray-800 dark:stroke-white hover:stroke-red-500 transition-colors duration-200")
+                                        </button>
+                                    </form>
+                                </div>
+                            }else {
+                                <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                    <form hx-post={fmt.Sprintf("/thread/%d/vote", post.ThreadID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="upvote">
+                                        <button type="submit">
+                                            @icons.Up("28px","stroke-gray-800 dark:stroke-white hover:stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                        </button>
+                                    </form>
+                                    <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                    <form hx-post={fmt.Sprintf("/thread/%d/vote", post.ThreadID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="downvote">
+                                        <button type="submit">
+                                            @icons.Up("28px","rotate-180 cursor-pointer stroke-red-500 transition-colors duration-200")
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+                            <a href={templ.URL(fmt.Sprintf("/t/%s/comments/%d",post.CommunityName,post.ThreadID))} class="bg-[#eaedef] dark:bg-[#060809] text-black dark:text-white hover:bg-gray-200 rounded-full p-2 flex items-center gap-1 justify-center">
+                                @icons.Comment("26px","hover:stroke-black stroke-gray-800 dark:stroke-white transition-colors duration-300") Commenter
+                            </a>
+                            <div class="bg-[#eaedef] hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white rounded-full p-2 flex items-center gap-1 justify-center">
+                                @icons.Share("28px","hover:stroke-black stroke-gray-800 dark:stroke-white transition-colors duration-300 cursor-pointer") Partager
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+templ PostsComponents(posts []module.PostWithCommunity){
+    <div class="w-full min-h-[500px]">
+        for _,post := range posts {
+            <div class=" w-full border-b dark:border-[#3F3F3F] dark:border-[#3F3F3F] py-2">
+                <div class="w-full flex flex-col items-start p-4 gap-3 transition duration-300 ease-in-out hover:bg-[#fafbfc] dark:hover:bg-[#101010] rounded-xl">
+                    <a href={templ.URL(fmt.Sprintf("/communautes/%s",post.CommunityName))} class="flex w-full gap-2 items-center">
+                        <div class="w-[46px] h-[46px] bg-contain bg-center overflow-hidden rounded-full">
+                            <div class={BackgroundImage(transform(post.CommunityMedia)[0],"0.75rem")}></div>
+                        </div>
+                        <div>
+                            <p class="break-words poppins-regular text-black dark:text-white">{post.CommunityName}</p>
+                            {{
+                            timestampStr := string(post.CreatedAt)
+                            layout := "2006-01-02 15:04:05"
+                            parsedTime, err := time.Parse(layout, timestampStr)
+                            if err != nil {
+                                fmt.Println("Error parsing time:", err)
+                                return
+                            }
+                            location, err := time.LoadLocation("Africa/Casablanca")
+                            now := time.Now().In(location)
+                            diff := now.Sub(parsedTime)
+                            if diff < 0 {
+                                diff = 0 // Prevent negative times, handle future timestamps
+                            }
+                        }}
+                            <p class="break-words poppins-regular text-black dark:text-white flex gap-1 items-center">@icons.Clock("20px","") il y a
+                                switch {
+                                    case diff < time.Minute:
+                                        if int(diff.Seconds()) == 1 {
+                                            <span>{"1 second"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d seconds", int(diff.Seconds()))}</span>}
+                                    case diff < time.Hour:
+                                        if int(diff.Minutes()) == 1 {
+                                            <span>{"1 minute"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d minutes", int(diff.Minutes()))}</span>}
+                                    case diff < time.Hour*24:
+                                        if int(diff.Hours()) == 1 {
+                                            <span>{"1 heure"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d heures", int(diff.Hours()))}</span>}
+                                    case diff < time.Hour*24*30:
+                                        if int(diff.Hours() / 24) == 1 {
+                                            <span>{"1 jour"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d jours", int(diff.Hours() / 24))}</span>}
+                                    case diff < time.Hour*24*365:
+                                        if int(diff.Hours() / 24 / 30) == 1 {
+                                            <span>{"1 mois"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d mois", int(diff.Hours() / 24 / 30))}</span>}
+                                    default:
+                                        if int(diff.Hours() / 24 / 365) == 1 {
+                                            <span>{"1 année"}</span>
+                                        }else{
+                                        <span>{fmt.Sprintf("%d années", int(diff.Hours() / 24 / 365))}</span>}
+                                }
+                            </p>
+                        </div>
+                    </a>
+                    <div class="w-full flex flex-col items-start gap-3">
+                        <p class="w-full break-words poppins-regular text-black dark:text-white text-lg text-ellipsis">{post.Content}</p>
+                        <div class="w-full max-h-[600px] flex items-center justify-center bg-contain bg-center overflow-hidden rounded-xl">
+                            if transform(post.PostsMediaExtention)[0] != "null" {
+                                if transform(post.PostsMediaExtention)[0] == ".mp4"{
+                                    // <iframe class="w-full aspect-video" src={fmt.Sprintf("/assets%s",transform(post.PostsMedia)[0])} frameborder="0" allowfullscreen></iframe>
+                                    <div class="flex w-full justify-center items-center p-4">
+                                        <div class="relative w-full bg-black rounded-lg overflow-hidden">
+                                            <!-- Video Container -->
+                                            <video id="custom-video-player" class="w-full h-full" preload="metadata" autoplay muted controls>
+                                                <source src={fmt.Sprintf("/assets%s",transform(post.PostsMedia)[0])} type="video/mp4">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        </div>
+                                        <script>
+                                            const videoPlayer = document.getElementById('custom-video-player');
+                                            videoPlayer.addEventListener('click', () => {
+                                                if (videoPlayer.paused) {
+                                                    videoPlayer.play();
+                                                } else {
+                                                    videoPlayer.pause();
+                                                }
+                                            });
+                                        </script>
+                                    </div>
+                                }else {
+                                    <div class="w-full h-[600px] flex items-center justify-center bg-contain bg-center overflow-hidden rounded-xl">
+                                        <div class={BackgroundImage(transform(post.PostsMedia)[0],"0.75rem")}></div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                        <div class="flex items-center justify-start w-full gap-3">
+                            if post.UserVote == 0 {
+                                <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                    <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="upvote">
+                                        <button type="submit">
+                                            @icons.Up("28px","stroke-gray-800 dark:stroke-white hover:stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                        </button>
+                                    </form>
+                                    <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                    <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="downvote">
+                                        <button type="submit">
+                                            @icons.Up("28px","rotate-180 cursor-pointer stroke-gray-800 dark:stroke-white hover:stroke-red-500 transition-colors duration-200")
+                                        </button>
+                                    </form>
+                                </div>
+                            }else if post.UserVote == 1 {
+                                <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                    <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="upvote">
+                                        <button type="submit">
+                                            @icons.Up("28px","stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                        </button>
+                                    </form>
+                                    <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                    <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="downvote">
+                                        <button type="submit">
+                                            @icons.Up("28px","rotate-180 cursor-pointer stroke-gray-800 dark:stroke-white hover:stroke-red-500 transition-colors duration-200")
+                                        </button>
+                                    </form>
+                                </div>
+                            }else {
+                                <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                    <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="upvote">
+                                        <button type="submit">
+                                            @icons.Up("28px","stroke-gray-800 dark:stroke-white hover:stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                        </button>
+                                    </form>
+                                    <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", post.Votes)}</p>
+                                    <form hx-post={fmt.Sprintf("/post/%d/vote", post.PostID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="downvote">
+                                        <button type="submit">
+                                            @icons.Up("28px","rotate-180 cursor-pointer stroke-red-500 transition-colors duration-200")
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+                            <a href={templ.URL(fmt.Sprintf("/p/%s/comments/%d",post.CommunityName,post.PostID))} class="bg-[#eaedef] dark:bg-[#060809] text-black dark:text-white hover:bg-gray-200 rounded-full p-2 flex items-center gap-1 justify-center">
+                                @icons.Comment("26px","hover:stroke-black stroke-gray-800 dark:stroke-white transition-colors duration-300") Commenter
+                            </a>
+                            <div class="bg-[#eaedef] hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white rounded-full p-2 flex items-center gap-1 justify-center">
+                                @icons.Share("28px","hover:stroke-black stroke-gray-800 dark:stroke-white transition-colors duration-300 cursor-pointer") Partager
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

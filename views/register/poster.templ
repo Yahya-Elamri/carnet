@@ -1,0 +1,343 @@
+package register
+
+import (
+    "github.com/Yahya-Elamri/signeitfaster/views/components"
+    "github.com/Yahya-Elamri/signeitfaster/module"
+    //"github.com/Yahya-Elamri/signeitfaster/views/icons"
+    "github.com/Yahya-Elamri/signeitfaster/utils"
+    "fmt"
+)
+
+css BackgroundImage(path , bgsize string){
+    width: 100%;
+    height: 100%;
+    background-image: { fmt.Sprintf("url('/assets%s')", path) };
+    background-size:  { fmt.Sprintf("%s", bgsize) };
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+
+templ Post(users struct{UserId uint;Username string; ProfileUrl string},Communities []module.Communities){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel()
+        <div class="w-full md:max-w-[calc(100vw-272px)] md:min-h-[calc(100vh-63px)] flex flex-col items-center mx-auto justify-start p-4">
+            <div class="w-[74%] flex flex-col items-start justify-center gap-3 my-5">
+                <h1 class="poppins-semibold text-3xl">Créer une publication</h1>
+                <div class="w-full mb-4">
+                    <ul class="flex gap-4">
+                        <a href="/poster/post"><li class="poppins-medium text-md py-1 border-b-2 border-black dark:border-white cursor-pointer">Post</li></a>
+                        <a href="/poster/thread"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black dark:border-white cursor-pointer">Thread</li></a>
+                        <a href="/register"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black dark:border-white cursor-pointer">Annonces à vendre</li></a>
+                    </ul>
+                </div>
+                <div class="w-[78%] h-full flex flex-col justify-start items-start gap-3">
+                    <div class="flex flex-col w-full items-start">
+                        <p class="poppins-regular text-sm">Remplissez le formulaire ci-dessous pour créer une publication.</p>
+                    </div>
+                    <div class="w-[78%] flex justify-start items-center">
+                        <div class="w-full flex flex-col gap-2 items-start">
+                            <style>
+                                .form-step {
+                                    display: none;
+                                }
+                                .form-step.active {
+                                    display: flex;
+                                }
+                                .dropzone {
+                                    border: 2px dashed #4A5568;
+                                    border-radius: 0.375rem;
+                                    padding: 2rem;
+                                    text-align: center;
+                                    cursor: pointer;
+                                }
+                                .dropzone.dragover {
+                                    border-color: #3182CE;
+                                    background-color: #EBF8FF;
+                                }
+                            </style>
+                            <form hx-post="/add-post" hx-target="this" hx-swap="outerHTML" enctype="multipart/form-data" class="w-full flex flex-col fade-in gap-5 justify-between items-start" method="POST">
+                                 <!-- Dropdown Button -->
+                                <div class="w-64 relative" id="custom-dropdown">
+                                    <button id="dropdown-button" type="button" class="w-full p-2 border border-gray-300 dark:border-[#3F3F3F] rounded-md flex items-center justify-between text-left">
+                                        <span id="selected-option" class="truncate">Sélectionner la communauté</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                    <!-- Hidden Input to store selected community ID -->
+                                    <input type="hidden" id="selectedCommunityID" name="community_id" value="">
+                                    <ul id="dropdown-options" class="hidden absolute z-10 bg-white dark:bg-[#060809] w-full mt-1 border border-gray-300 dark:border-[#3F3F3F] rounded-md shadow-lg max-h-60 overflow-auto">
+                                        for _,communitie := range Communities {
+                                            <li data-id={fmt.Sprintf("%d",communitie.CommunityID)} data-value={communitie.Name} class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-indigo-600 hover:text-white flex items-center">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-[50px] h-[50px] bg-contain bg-center overflow-hidden rounded-full">
+                                                        <div class={BackgroundImage(utils.Transform(communitie.CommunitiesMedia)[0],"cover")}></div>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-lg poppins-semibold">{communitie.Name}</p>
+                                                        <p class="text-sm poppins-regular">{fmt.Sprintf("%d",communitie.TotalJoined)} Members</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                                <input type="hidden" name="user_id" value={fmt.Sprintf("%d", users.UserId)} />
+                                <div class="w-full flex flex-col gap-2">
+                                    <textarea class="py-[18px] px-2 rounded-xl w-[90%] h-[190px] max-h-[190px] focus:border-none outline-none text-xl poppins-meduim bg-[#eaedef] dark:bg-[#060809]" id="message" name="content" rows="4" cols="50" maxlength="500" placeholder={fmt.Sprintf("Dire quelque chose , %s", users.Username)} oninput="updateCounter()" required></textarea>
+                                    <span class="char-counter w-full flex items-center justify-start" id="charCounter">0 / 500</span>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <label for="file-upload1" class="text-xl poppins-meduim text-[#9DA4B0]">Photo / Video</label>
+                                    <div id="dropzone1" class="dropzone mt-2 p-6 bg-white dark:bg-[#060809] flex items-center justify-center">
+                                        <p class="poppins-regular text-gray-500">Drag and drop images here, or click to select files</p>
+                                        <input id="file-upload1" name="posts_media" type="file" class="hidden" multiple>
+                                    </div>
+                                </div>
+                                <div class="w-full flex flex-col items-start gap-2">  
+                                    <button class="poppins-regular bg-green-500 px-4 py-[12px] w-1/2 rounded-xl text-white hover:bg-green-700" type="submit">Publier</button>
+                                </div>
+                            </form>
+                            <script>
+                                function updateCounter() {
+                                const textarea = document.getElementById('message');
+                                const counter = document.getElementById('charCounter');
+                                counter.textContent = `${textarea.value.length} / 500`;
+                                }
+                            </script>
+                            <script>
+                                function initializeDropzone(dropzoneId, fileUploadId) {
+                                    const dropzone = document.getElementById(dropzoneId);
+                                    const fileUpload = document.getElementById(fileUploadId);
+
+                                    dropzone.addEventListener('click', () => fileUpload.click());
+
+                                    dropzone.addEventListener('dragover', (event) => {
+                                        event.preventDefault();
+                                        dropzone.classList.add('dragover');
+                                    });
+
+                                    dropzone.addEventListener('dragleave', () => {
+                                        dropzone.classList.remove('dragover');
+                                    });
+
+                                    dropzone.addEventListener('drop', (event) => {
+                                        event.preventDefault();
+                                        dropzone.classList.remove('dragover');
+                                        fileUpload.files = event.dataTransfer.files;
+                                        updateFileNames(dropzone, fileUpload);
+                                    });
+
+                                    fileUpload.addEventListener('change', () => {
+                                        updateFileNames(dropzone, fileUpload);
+                                    });
+                                }
+                                function updateFileNames(dropzone, fileUpload) {
+                                    if (fileUpload.files.length > 0) {
+                                        dropzone.querySelector('p').textContent = `${fileUpload.files.length} images sélectionnées`;
+                                    } else {
+                                        dropzone.querySelector('p').textContent = 'Drag and drop images here, or click to select files';
+                                    }
+                                }
+                                initializeDropzone('dropzone1', 'file-upload1');
+                            </script>  
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const dropdownButton = document.getElementById('dropdown-button');
+                                    const dropdownOptions = document.getElementById('dropdown-options');
+                                    const selectedOption = document.getElementById('selected-option');
+                                    const customDropdown = document.getElementById('custom-dropdown');
+
+                                    function toggleDropdown() {
+                                        dropdownOptions.classList.toggle('hidden');
+                                        dropdownButton.querySelector('svg').classList.toggle('rotate-180');
+                                    }
+
+                                    dropdownButton.addEventListener('click', function(e) {
+                                        e.stopPropagation();
+                                        toggleDropdown();
+                                    });
+
+                                    dropdownOptions.addEventListener('click', function(e) {
+                                        if (e.target.tagName === 'LI') {
+                                            selectedOption.textContent =  e.target.dataset.value;
+                                            toggleDropdown();
+                                            
+                                            // You can add your form logic here, e.g.:
+                                            console.log('Selected value:', e.target.dataset.id);
+                                            selectedCommunityID.value =  e.target.dataset.id;
+                                        }
+                                        e.stopPropagation();
+                                    });
+
+                                    // Close dropdown when clicking outside
+                                    document.addEventListener('click', function(e) {
+                                        if (!customDropdown.contains(e.target)) {
+                                            dropdownOptions.classList.add('hidden');
+                                            dropdownButton.querySelector('svg').classList.remove('rotate-180');
+                                        }
+                                    });
+                                });
+                            </script>
+                        </div> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+templ Thread(users struct{UserId uint;Username string; ProfileUrl string},Communities []module.Communities){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel()
+        <div class="w-full md:max-w-[calc(100vw-272px)] md:min-h-[calc(100vh-63px)] flex flex-col items-center mx-auto justify-start p-4">
+            <div class="w-[74%] flex flex-col items-start justify-center gap-3 my-5">
+                <h1 class="poppins-semibold text-3xl">Créer une publication</h1>
+                <div class="w-full mb-4">
+                    <ul class="flex gap-4">
+                        <a href="/poster/post"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black dark:border-white cursor-pointer">Post</li></a>
+                        <a href="/poster/thread"><li class="poppins-medium text-md py-1 border-b-2 border-black dark:border-white cursor-pointer">Thread</li></a>
+                        <a href="/register"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black dark:border-white cursor-pointer">Annonces à vendre</li></a>
+                    </ul>
+                </div>
+                <div class="w-[78%] h-full flex flex-col justify-start items-start gap-3">
+                    <div class="flex flex-col w-full items-start">
+                        <p class="poppins-regular text-sm">Remplissez le formulaire ci-dessous pour créer une publication.</p>
+                    </div>
+                    <div class="w-[78%] flex justify-start items-center">
+                        <div class="w-full flex flex-col gap-2 items-start">
+                            <form hx-post="/add-thread" hx-target="this" hx-swap="outerHTML" enctype="multipart/form-data" class="w-full flex flex-col fade-in gap-5 justify-between items-start" method="POST">
+                                <div class="w-64 relative" id="custom-dropdown">
+                                    <button id="dropdown-button" type="button" class="w-full p-2 border border-gray-300 dark:border-[#3F3F3F] rounded-md flex items-center justify-between text-left">
+                                        <span id="selected-option" class="truncate">Sélectionner la communauté</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                    <!-- Hidden Input to store selected community ID -->
+                                    <input type="hidden" id="selectedCommunityID" name="community_id" value="">
+                                    <ul id="dropdown-options" class="hidden absolute z-10 bg-white dark:bg-[#060809] w-full mt-1 border border-gray-300 dark:border-[#3F3F3F] rounded-md shadow-lg max-h-60 overflow-auto">
+                                        for _,communitie := range Communities {
+                                            <li data-id={fmt.Sprintf("%d",communitie.CommunityID)} data-value={communitie.Name} class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-indigo-600 hover:text-white flex items-center">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-[50px] h-[50px] bg-contain bg-center overflow-hidden rounded-full">
+                                                        <div class={BackgroundImage(utils.Transform(communitie.CommunitiesMedia)[0],"cover")}></div>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-lg poppins-semibold">{communitie.Name}</p>
+                                                        <p class="text-sm poppins-regular">{fmt.Sprintf("%d",communitie.TotalJoined)} Members</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                                <input type="hidden" name="user_id" value={fmt.Sprintf("%d", users.UserId)} />
+                                <div class="w-full flex flex-col gap-2">
+                                    <textarea class="py-[18px] px-2 rounded-xl w-[90%] h-[190px] max-h-[190px] focus:border-none outline-none text-xl poppins-meduim bg-[#eaedef] dark:bg-[#060809]" id="message" name="content" rows="4" cols="50" maxlength="1500" placeholder={fmt.Sprintf("Dire quelque chose , %s", users.Username)} oninput="updateCounter()" required></textarea>
+                                    <span class="char-counter w-full flex items-center justify-start" id="charCounter">0 / 1500</span>
+                                </div>
+                                <div class="w-full max-w-md bg-[#eaedef] dark:bg-[#060809] p-6 rounded-xl">
+                                    <div id="tags-container" class="flex flex-wrap gap-2 mb-2"></div>
+                                    <input type="text" id="tag-input" placeholder="Type a tag and press Enter" class="border border-[#d5e0d5] dark:border-[#3F3F3F] dark:bg-[#0F0F0F] text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[12px] w-full rounded-xl">
+                                    <input type="hidden" id="hidden-tag-input" name="tags" value=""/>
+                                </div>
+                                <script>
+                                function updateCounter() {
+                                    const textarea = document.getElementById('message');
+                                    const counter = document.getElementById('charCounter');
+                                    counter.textContent = `${textarea.value.length} / 1500`;
+                                    }
+                                </script>
+                                <script>
+                                    const tagsContainer = document.getElementById('tags-container');
+                                    const tagInput = document.getElementById('tag-input');
+                                    const HiddentagInput = document.getElementById('hidden-tag-input');
+                                    let tags = [];
+
+                                    function renderTags() {
+                                        tagsContainer.innerHTML = '';
+                                        tags.forEach((tag, index) => {
+                                            const tagElement = document.createElement('span');
+                                            tagElement.className = 'bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center';
+                                            tagElement.innerHTML = `
+                                                ${tag}
+                                                <button onclick="removeTag(${index})" class="ml-1 focus:outline-none">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                                </button>
+                                            `;
+                                            tagsContainer.appendChild(tagElement);
+                                        });
+                                        HiddentagInput.value = tags.join()
+                                    }
+
+                                    function addTag(tag) {
+                                        if (tag.trim() !== '' && tags.length < 15) {
+                                            tags.push(tag.trim());
+                                            renderTags();
+                                        }
+                                    }
+
+                                    function removeTag(index) {
+                                        tags.splice(index, 1);
+                                        renderTags();
+                                    }
+
+                                    tagInput.addEventListener('keydown', function(event) {
+                                        if (event.key === 'Enter') {
+                                            event.preventDefault();
+                                            addTag(this.value);
+                                            this.value = '';
+                                        }
+                                    });
+                                </script>
+                                <div class="w-full flex flex-col items-start gap-2">  
+                                    <button class="poppins-regular bg-green-500 px-4 py-[12px] w-1/2 rounded-xl text-white hover:bg-green-700" type="submit">Publier</button>
+                                </div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const dropdownButton = document.getElementById('dropdown-button');
+                                        const dropdownOptions = document.getElementById('dropdown-options');
+                                        const selectedOption = document.getElementById('selected-option');
+                                        const customDropdown = document.getElementById('custom-dropdown');
+
+                                        function toggleDropdown() {
+                                            dropdownOptions.classList.toggle('hidden');
+                                            dropdownButton.querySelector('svg').classList.toggle('rotate-180');
+                                        }
+
+                                        dropdownButton.addEventListener('click', function(e) {
+                                            e.stopPropagation();
+                                            toggleDropdown();
+                                        });
+
+                                        dropdownOptions.addEventListener('click', function(e) {
+                                            if (e.target.tagName === 'LI') {
+                                                selectedOption.textContent =  e.target.dataset.value;
+                                                toggleDropdown();
+                                    
+                                                selectedCommunityID.value =  e.target.dataset.id;
+                                            }
+                                            e.stopPropagation();
+                                        });
+
+                                        // Close dropdown when clicking outside
+                                        document.addEventListener('click', function(e) {
+                                            if (!customDropdown.contains(e.target)) {
+                                                dropdownOptions.classList.add('hidden');
+                                                dropdownButton.querySelector('svg').classList.remove('rotate-180');
+                                            }
+                                        });
+                                    });
+                                </script>
+                            </form>
+                        </div> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

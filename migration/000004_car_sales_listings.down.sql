@@ -1,0 +1,11 @@
+DROP TABLE IF EXISTS comment_vote;
+DROP TABLE IF EXISTS thread_vote;
+DROP TABLE IF EXISTS post_vote;
+DROP TABLE IF EXISTS user_communities;
+DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS threads;
+DROP TABLE IF EXISTS communities;
+DROP TABLE IF EXISTS user_agencies;
+DROP TABLE IF EXISTS car_parts_listings;
+DROP TABLE IF EXISTS car_sales_listings;

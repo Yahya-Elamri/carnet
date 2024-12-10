@@ -1,0 +1,568 @@
+package profile 
+
+import (
+    "github.com/Yahya-Elamri/signeitfaster/views/components"
+    "github.com/Yahya-Elamri/signeitfaster/views/icons"
+    "github.com/Yahya-Elamri/signeitfaster/module"
+)
+
+templ Settings(User module.UserData){
+    {{
+        users := struct {
+            UserId     uint 
+            Username   string
+            ProfileUrl string
+        }{
+            UserId:     User.UserId,
+            Username:   User.Username,
+            ProfileUrl: User.ProfileUrl,
+        }
+    }}
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel()
+        <div class="w-full md:max-w-[calc(100vw-272px)] md:min-h-[calc(100vh-63px)] flex flex-col items-center mx-auto justify-start p-4">
+            <div class="w-[74%] flex flex-col items-start justify-center gap-3 my-5">
+                <h1 class="poppins-semibold text-3xl">Parameter</h1>
+                <div class="w-full mb-4">
+                    <ul class="flex gap-4">
+                        <a href="/parametre"><li class="poppins-medium text-md py-1 border-b-2 border-black dark:border-white cursor-pointer">Profil</li></a>
+                        <a href="/parametre/compte"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black dark:border-white cursor-pointer">Compte</li></a>
+                        <a href="/"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black dark:border-white cursor-pointer">Préférence</li></a>
+                        <a href="/"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black dark:border-white cursor-pointer">Confidentialité</li></a>
+                        <a href="/"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black dark:border-white cursor-pointer">Notification</li></a>
+                    </ul>
+                </div>
+                <div class="w-[76%] h-full flex flex-col justify-start items-start gap-3">
+                    <div class="w-full flex justify-start items-center">
+                        <div class="w-full flex flex-col gap-2 items-start">
+                            <!-- Overlay -->
+                            <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden z-10"></div>
+                            <div class="w-full flex flex-col fade-in gap-8 justify-between items-start">
+                                <div class="flex items-start justify-between w-full p-2 border-b dark:border-[#3F3F3F]">
+                                    <div class="flex flex-col items-start gap-1">                                    
+                                        <label class="poppins-medium text-md">Nom et Prénom</label>
+                                        <p class="text-gray-600 dark:text-gray-400 text-xs poppins-medium capitalize">{User.LastName} {User.FirstName}</p>
+                                    </div>
+                                    <p data-dialog="dialog-1" class="open-dialog text-md poppins-semibold text-orange-600 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-600 dark:hover:text-white p-2 rounded-xl">Modifier</p>
+                                    <div id="dialog-1" class="dialog fixed inset-0 flex items-center justify-center hidden z-20">
+                                        <div class="bg-white dark:bg-[#060809] p-5 rounded-xl w-[400px] shadow-lg text-center">
+                                            <div class="w-full flex items-center justify-between border-b dark:border-[#3F3F3F]">
+                                                <h1 class="w-full flex items-center justify-start text-2xl poppins-semibold">Nom et Prenom</h1>
+                                                <button class="close-dialog py-2 rounded dark:bg-[#060809]">@icons.Close("30px","stroke-black dark:stroke-white")</button>
+                                            </div>
+                                            <form hx-post="/update-profile" hx-target="this" hx-swap="outerHTML" enctype="multipart/form-data" class="w-full mt-3 flex flex-col fade-in gap-5 justify-between items-start" method="POST">
+                                                <div class="w-full flex flex-col items-start gap-2 bg-transparent text-black dark:text-white">
+                                                    <label class="poppins-regular" for="FirstName">Nom</label>
+                                                    <input class="border w-full border-[#d5e0d5] dark:border-[#3F3F3F] bg-transparent text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="text" name="FirstName" id="FirstName" required/>
+                                                </div>
+                                                <div class="w-full flex flex-col items-start gap-2 bg-transparent text-black dark:text-white">
+                                                    <label class="poppins-regular" for="LastName">Prenom</label>
+                                                    <input class="border w-full border-[#d5e0d5] dark:border-[#3F3F3F]  bg-transparent text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="text" name="LastName" id="LastName" required/>
+                                                </div>
+                                                <div class="w-full flex flex-col items-start gap-2">  
+                                                    <button class="poppins-regular bg-green-500 px-4 py-[12px] w-1/2 rounded-xl text-white hover:bg-green-700" type="submit">mettre à jour</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start justify-between w-full p-2 border-b dark:border-[#3F3F3F]">
+                                    <div class="flex flex-col items-start gap-1">                                    
+                                        <label class="poppins-medium text-md">Au propos de vous</label>
+                                        <p class="text-gray-600 dark:text-gray-400 text-xs poppins-medium capitalize">modifiez votre propos</p>
+                                    </div>
+                                    <p data-dialog="dialog-2" class="open-dialog text-md poppins-semibold text-orange-600 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-600 dark:hover:text-white p-2 rounded-xl">Modifier</p>
+                                    <div id="dialog-2" class="dialog fixed inset-0 flex items-center justify-center hidden z-20">
+                                        <div class="bg-white dark:bg-[#060809] p-5 rounded-xl w-[400px] shadow-lg text-center">
+                                            <div class="w-full flex items-center justify-between border-b dark:border-[#3F3F3F]">
+                                                <h1 class="w-full flex items-center justify-start text-2xl poppins-semibold">Au propos de vous</h1>
+                                                <button class="close-dialog py-2 rounded dark:bg-[#060809]">@icons.Close("30px","stroke-black dark:stroke-white")</button>
+                                            </div>
+                                            <form hx-post="/update-profile" hx-target="this" hx-swap="outerHTML" enctype="multipart/form-data" class="w-full mt-3 flex flex-col fade-in gap-5 justify-between items-start" method="POST">
+                                                <div class="w-full flex flex-col gap-2">
+                                                    <textarea class="py-[18px] w-[90%] h-[190px] max-h-[190px] focus:border-none outline-none text-xl poppins-meduim dark:bg-[#060809]" id="message" name="Description" rows="4" cols="50" maxlength="500" placeholder="Donnez une brève description de vous-même" oninput="updateCounter()" required></textarea>
+                                                    <span class="char-counter w-full flex items-center justify-end" id="charCounter">0 / 250</span>
+                                                </div>
+                                                <script>
+                                                    function updateCounter() {
+                                                    const textarea = document.getElementById('message');
+                                                    const counter = document.getElementById('charCounter');
+                                                    counter.textContent = `${textarea.value.length} / 500`;
+                                                    }
+                                                </script>
+                                                <div class="w-full flex flex-col items-start gap-2">  
+                                                    <button class="poppins-regular bg-green-500 px-4 py-[12px] w-1/2 rounded-xl text-white hover:bg-green-700" type="submit">mettre à jour</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start justify-between w-full p-2 border-b dark:border-[#3F3F3F]">
+                                    <div class="flex flex-col items-start gap-1">                                    
+                                        <label class="poppins-medium text-md">Photo de Profil</label>
+                                        <p class="text-gray-600 dark:text-gray-400 text-xs poppins-medium capitalize">Modifiez votre avatar ou téléchargez une image</p>
+                                    </div>
+                                    <p data-dialog="dialog-3" class="open-dialog text-md poppins-semibold text-orange-600 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-600 dark:hover:text-white p-2 rounded-xl">Modifier</p>
+                                    <div id="dialog-3" class="dialog fixed inset-0 flex items-center justify-center hidden z-20">
+                                        <div class="bg-white dark:bg-[#060809] p-5 rounded-xl w-[400px] shadow-lg text-center">
+                                            <div class="w-full flex items-center justify-between border-b dark:border-[#3F3F3F]">
+                                                <h1 class="w-full flex items-center justify-start text-2xl poppins-semibold">Photo de profil</h1>
+                                                <button class="close-dialog py-2 rounded dark:bg-[#060809]">@icons.Close("30px","stroke-black dark:stroke-white")</button>
+                                            </div>
+                                            <form hx-post="/update-profile" hx-target="this" hx-swap="outerHTML" enctype="multipart/form-data" class="w-full mt-3 flex flex-col fade-in gap-5 justify-between items-start" method="POST">
+                                                <style>
+                                                    .form-step {
+                                                        display: none;
+                                                    }
+                                                    .form-step.active {
+                                                        display: flex;
+                                                    }
+                                                    .dropzone {
+                                                        border: 2px dashed #4A5568;
+                                                        border-radius: 0.375rem;
+                                                        padding: 2rem;
+                                                        text-align: center;
+                                                        cursor: pointer;
+                                                    }
+                                                    .dropzone.dragover {
+                                                        border-color: #3182CE;
+                                                        background-color: #EBF8FF;
+                                                    }
+                                                </style>
+                                                <div class="w-full flex flex-col gap-2">
+                                                    <label for="file-upload" class="text-xl poppins-meduim text-[#9DA4B0]"></label>
+                                                    <div id="dropzone" class="dropzone mt-2 p-6 bg-white dark:bg-[#060809] flex items-center justify-center">
+                                                        <p class="poppins-regular text-gray-500">Drag and drop images here, or click to select files</p>
+                                                        <input id="file-upload" name="ProfileUrl" type="file" accept="image/*" class="hidden">
+                                                    </div>
+                                                </div>
+                                                <script>
+                                                    function initializeDropzone(dropzoneId, fileUploadId) {
+                                                        const dropzone = document.getElementById(dropzoneId);
+                                                        const fileUpload = document.getElementById(fileUploadId);
+
+                                                        dropzone.addEventListener('click', () => fileUpload.click());
+
+                                                        dropzone.addEventListener('dragover', (event) => {
+                                                            event.preventDefault();
+                                                            dropzone.classList.add('dragover');
+                                                        });
+
+                                                        dropzone.addEventListener('dragleave', () => {
+                                                            dropzone.classList.remove('dragover');
+                                                        });
+
+                                                        dropzone.addEventListener('drop', (event) => {
+                                                            event.preventDefault();
+                                                            dropzone.classList.remove('dragover');
+                                                            fileUpload.files = event.dataTransfer.files;
+                                                            updateFileNames(dropzone, fileUpload);
+                                                        });
+
+                                                        fileUpload.addEventListener('change', () => {
+                                                            updateFileNames(dropzone, fileUpload);
+                                                        });
+                                                    }
+                                                    function updateFileNames(dropzone, fileUpload) {
+                                                        if (fileUpload.files.length > 0) {
+                                                            dropzone.querySelector('p').textContent = `${fileUpload.files.length} images sélectionnées`;
+                                                        } else {
+                                                            dropzone.querySelector('p').textContent = 'Drag and drop images here, or click to select files';
+                                                        }
+                                                    }
+                                                    initializeDropzone('dropzone', 'file-upload');
+                                                </script>
+                                                <div class="w-full flex flex-col items-start gap-2">  
+                                                    <button class="poppins-regular bg-green-500 px-4 py-[12px] w-1/2 rounded-xl text-white hover:bg-green-700" type="submit">mettre à jour</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start justify-between w-full p-2 border-b dark:border-[#3F3F3F]">
+                                    <div class="flex flex-col items-start gap-1">                                    
+                                        <label class="poppins-medium text-md">Liens sociaux</label>
+                                        <p class="text-gray-600 dark:text-gray-400 text-xs poppins-medium capitalize">Ajoutez ou modifiez vos liens sociaux</p>
+                                    </div>
+                                    <p data-dialog="dialog-4" class="open-dialog text-md poppins-semibold text-orange-600 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-600 dark:hover:text-white p-2 rounded-xl">Modifier</p>
+                                    <div id="dialog-4" class="dialog fixed inset-0 flex items-center justify-center hidden z-20">
+                                        <div class="bg-white dark:bg-[#060809] p-5 rounded-xl w-[400px] shadow-lg text-center">
+                                            <div class="w-full flex items-center justify-between border-b dark:border-[#3F3F3F]">
+                                                <h1 class="w-full flex items-center justify-start text-2xl poppins-semibold">Liens sociaux</h1>
+                                                <button class="close-dialog py-2 rounded dark:bg-[#060809]">@icons.Close("30px","stroke-black dark:stroke-white")</button>
+                                            </div>
+                                            <form id="social-links-form" hx-post="/update-profile" hx-target="this" hx-swap="outerHTML" enctype="multipart/form-data" class="w-full mt-5 flex flex-col fade-in gap-5 justify-between items-start" method="POST">
+                                                <div id="social-links-container" class="space-y-2 w-full">
+                                                    <div class="flex items-center space-x-2 w-full">
+                                                        <input type="url" name="social_links[]" maxlength="255" placeholder="Enter social link" class="input-social-link border w-full border-[#d5e0d5] dark:border-[#3F3F3F] bg-transparent text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[14px] rounded-xl" required>
+                                                        <button type="button" id="add-social-link" class="dark:hover:bg-[#101010] rounded-full cursor-pointer border border-[#d5e0d5] dark:border-[#3F3F3F] p-2 hidden md:block poppins-regular">
+                                                            @icons.Plus("24px","fill-black dark:fill-white")
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                    <!-- Hidden form for submitting -->
+                                                <input type="hidden" name="social_links_array" id="social-links-array">
+                                                <button type="submit" class="poppins-regular bg-green-500 px-4 py-[12px] w-1/2 rounded-xl text-white hover:bg-green-700">mettre à jour</button>
+                                            </form>
+                                            <script>
+                                                document.addEventListener('DOMContentLoaded', () => {
+                                                    const maxLinks = 3;
+                                                    let socialLinksCount = 1;
+
+                                                    const addSocialLinkButton = document.getElementById('add-social-link');
+                                                    const socialLinksContainer = document.getElementById('social-links-container');
+
+                                                    // Function to add a new social link input
+                                                    const addSocialLink = () => {
+                                                        if (socialLinksCount < maxLinks) {
+                                                        socialLinksCount++;
+
+                                                        // Create new input and button elements
+                                                        const newSocialLinkInput = document.createElement('div');
+                                                        newSocialLinkInput.className = 'flex items-center space-x-2';
+                                                        newSocialLinkInput.innerHTML = `
+                                                            <input type="url" name="social_links[]" maxlength="255" placeholder="Enter social link" class="input-social-link border w-full border-[#d5e0d5] dark:border-[#3F3F3F] bg-transparent text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[14px] rounded-xl" required>
+                                                            <button type="button" class="remove-social-link dark:hover:bg-[#101010] rounded-full cursor-pointer border border-[#d5e0d5] dark:border-[#3F3F3F] p-2 hidden md:block poppins-regular">
+                                                            <p class="w-[24px] h-[24px]">-</p>
+                                                            </button>
+                                                        `;
+
+                                                        // Append the new input element to the container
+                                                        socialLinksContainer.appendChild(newSocialLinkInput);
+
+                                                        // Attach the event listener directly to the newly added remove button
+                                                        const removeButton = newSocialLinkInput.querySelector('.remove-social-link');
+                                                        removeButton.addEventListener('click', () => {
+                                                            newSocialLinkInput.remove();
+                                                            socialLinksCount--;
+                                                        });
+                                                        }
+                                                    };
+
+                                                    // Add event listener to the "Add" button
+                                                    addSocialLinkButton.addEventListener('click', addSocialLink);
+
+                                                    // Sanitize inputs and submit array securely
+                                                    document.getElementById('social-links-form').addEventListener('submit', function (e) {
+                                                        const socialLinks = Array.from(document.querySelectorAll('.input-social-link')).map(input => {
+                                                        return input.value.trim();
+                                                        }).filter(Boolean); // Remove empty or invalid inputs
+
+                                                        if (socialLinks.length > 0) {
+                                                        document.getElementById('social-links-array').value = JSON.stringify(socialLinks);
+                                                        } else {
+                                                        e.preventDefault(); // Prevent submission if no valid links
+                                                        alert('Please enter at least one valid social link.');
+                                                        }
+                                                    });
+                                                });
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start justify-between w-full p-2 border-b dark:border-[#3F3F3F]">
+                                    <div class="flex flex-col items-start gap-1">                                    
+                                        <label class="poppins-medium text-md">Afficher les communautés actives</label>
+                                        <p class="text-gray-600 dark:text-gray-400 text-xs poppins-medium capitalize">Affichez sur votre profil les communautés dans lesquelles vous êtes le plus actif</p>
+                                    </div>
+                                    <style>
+                                        .switch {
+                                            position: relative;
+                                            display: inline-block;
+                                            width: 60px;
+                                            height: 34px;
+                                            }
+
+                                            /* Hide default HTML checkbox */
+                                            .switch input {
+                                            opacity: 0;
+                                            width: 0;
+                                            height: 0;
+                                            }
+
+                                            /* The slider */
+                                            .slider {
+                                            position: absolute;
+                                            cursor: pointer;
+                                            top: 0;
+                                            left: 0;
+                                            right: 0;
+                                            bottom: 0;
+                                            background-color: #ccc;
+                                            -webkit-transition: .4s;
+                                            transition: .4s;
+                                            }
+
+                                            .slider:before {
+                                            position: absolute;
+                                            content: "";
+                                            height: 26px;
+                                            width: 26px;
+                                            left: 4px;
+                                            bottom: 4px;
+                                            background-color: white;
+                                            -webkit-transition: .4s;
+                                            transition: .4s;
+                                            }
+
+                                            input:checked + .slider {
+                                            background-color: #2196F3;
+                                            }
+
+                                            input:focus + .slider {
+                                            box-shadow: 0 0 1px #2196F3;
+                                            }
+
+                                            input:checked + .slider:before {
+                                            -webkit-transdiv: translateX(26px);
+                                            -ms-transform: translateX(26px);
+                                            transform: translateX(26px);
+                                            }
+
+                                            /* Rounded sliders */
+                                            .slider.round {
+                                            border-radius: 34px;
+                                            }
+
+                                            .slider.round:before {
+                                            border-radius: 50%;
+                                            }
+                                    </style>
+                                    <label class="switch">
+                                        <input type="checkbox">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div class="flex items-start justify-between w-full p-2 border-b dark:border-[#3F3F3F]">
+                                    <div class="flex flex-col items-start gap-1">                                    
+                                        <label class="poppins-medium text-md">Afficher le contenu sensible</label>
+                                        <p class="text-gray-600 dark:text-gray-400 text-xs poppins-medium capitalize"></p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', () => {
+                                        const openDialogButtons = document.querySelectorAll('.open-dialog');
+                                        const closeDialogButtons = document.querySelectorAll('.close-dialog');
+                                        const dialogs = document.querySelectorAll('.dialog');
+                                        const overlay = document.getElementById('overlay');
+
+                                        openDialogButtons.forEach(button => {
+                                            button.addEventListener('click', () => {
+                                                const dialogId = button.getAttribute('data-dialog');
+                                                const dialog = document.getElementById(dialogId);
+                                                dialog.classList.remove('hidden');
+                                                overlay.classList.remove('hidden');
+                                            });
+                                        });
+
+                                        closeDialogButtons.forEach(button => {
+                                            button.addEventListener('click', () => {
+                                                const dialog = button.closest('.dialog');
+                                                dialog.classList.add('hidden');
+                                                overlay.classList.add('hidden');
+                                            });
+                                        });
+
+                                        // Close dialog if overlay is clicked
+                                        overlay.addEventListener('click', () => {
+                                            dialogs.forEach(dialog => dialog.classList.add('hidden'));
+                                            overlay.classList.add('hidden');
+                                        });
+                                    });
+                                </script>
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>   
+}
+
+templ SettingsAccount(User module.UserData){
+    {{
+        users := struct {
+            UserId     uint 
+            Username   string
+            ProfileUrl string
+        }{
+            UserId:     User.UserId,
+            Username:   User.Username,
+            ProfileUrl: User.ProfileUrl,
+        }
+    }}
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel()
+        <div class="w-full md:max-w-[calc(100vw-272px)] md:min-h-[calc(100vh-63px)] flex flex-col items-center mx-auto justify-start p-4">
+            <div class="w-[74%] flex flex-col items-start justify-center gap-3 my-5">
+                <h1 class="poppins-semibold text-3xl">Parameter</h1>
+                <div class="w-full mb-4">
+                    <ul class="flex gap-4">
+                        <a href="/parametre"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black dark:border-white cursor-pointer">Profil</li></a>
+                        <a href="/parametre/compte"><li class="poppins-medium text-md py-1 border-b-2 border-black dark:border-white cursor-pointer">Compte</li></a>
+                        <a href="/"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black dark:border-white cursor-pointer">Préférence</li></a>
+                        <a href="/"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black dark:border-white cursor-pointer">Confidentialité</li></a>
+                        <a href="/"><li class="poppins-medium text-md py-1 hover:border-b-2 border-black dark:border-white cursor-pointer">Notification</li></a>
+                    </ul>
+                </div>
+                <div class="w-[76%] h-full flex flex-col justify-start items-start gap-3">
+                    <div class="w-full flex justify-start items-center">
+                        <div class="w-full flex flex-col gap-2 items-start">
+                            <!-- Overlay -->
+                            <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 hidden z-10"></div>
+                            <div class="w-full flex flex-col fade-in gap-8 justify-between items-start">
+                                <div class="flex items-start justify-between w-full p-2 border-b dark:border-[#3F3F3F]">
+                                    <div class="flex flex-col items-start gap-1">                                    
+                                        <label class="poppins-medium text-md">Email</label>
+                                        <p class="text-gray-600 dark:text-gray-400 text-xs poppins-medium">{User.Email}</p>
+                                    </div>
+                                    <p data-dialog="dialog-1" class="open-dialog text-md poppins-semibold text-orange-600 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-600 dark:hover:text-white p-2 rounded-xl">Modifier</p>
+                                    <div id="dialog-1" class="dialog fixed inset-0 flex items-center justify-center hidden z-20">
+                                        <div class="bg-white dark:bg-[#060809] p-5 rounded-xl w-[400px] shadow-lg text-center">
+                                            <div class="w-full flex items-center justify-between border-b dark:border-[#3F3F3F]">
+                                                <h1 class="w-full flex items-center justify-start text-2xl poppins-semibold">Email</h1>
+                                                <button class="close-dialog py-2 rounded dark:bg-[#060809]">@icons.Close("30px","stroke-black dark:stroke-white")</button>
+                                            </div>
+                                            <form hx-post="/update-profile" hx-target="this" hx-swap="outerHTML" enctype="multipart/form-data" class="w-full mt-3 flex flex-col fade-in gap-5 justify-between items-start" method="POST">
+                                                <div class="w-full flex flex-col items-start gap-2 bg-transparent text-black dark:text-white">
+                                                    <label class="poppins-regular" for="Email">Nouvel email</label>
+                                                    <input class="border w-full border-[#d5e0d5] dark:border-[#3F3F3F] bg-transparent text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="text" name="Email" id="Email" required/>
+                                                </div>
+                                                <div class="w-full flex flex-col items-start gap-2">  
+                                                    <button class="poppins-regular bg-green-500 px-4 py-[12px] w-1/2 rounded-xl text-white hover:bg-green-700" type="submit">mettre à jour</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start justify-between w-full p-2 border-b dark:border-[#3F3F3F]">
+                                    <div class="flex flex-col items-start gap-1">                                    
+                                        <label class="poppins-medium text-md">Mot de passe</label>
+                                        <p class="text-gray-600 dark:text-gray-400 text-xs poppins-medium capitalize">********</p>
+                                    </div>
+                                    <p data-dialog="dialog-2" class="open-dialog text-md poppins-semibold text-orange-600 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-600 dark:hover:text-white p-2 rounded-xl">Modifier</p>
+                                    <div id="dialog-2" class="dialog fixed inset-0 flex items-center justify-center hidden z-20">
+                                        <div class="bg-white dark:bg-[#060809] p-5 rounded-xl w-[400px] shadow-lg text-center">
+                                            <div class="w-full flex items-center justify-between border-b dark:border-[#3F3F3F]">
+                                                <h1 class="w-full flex items-center justify-start text-2xl poppins-semibold">Mot de Passe</h1>
+                                                <button class="close-dialog py-2 rounded dark:bg-[#060809]">@icons.Close("30px","stroke-black dark:stroke-white")</button>
+                                            </div>
+                                            <form hx-post="/update-passwd" hx-target="this" hx-swap="outerHTML" enctype="multipart/form-data" class="w-full mt-3 flex flex-col fade-in gap-5 justify-between items-start" method="POST">
+                                                <div class="w-full flex flex-col items-start gap-2 bg-transparent text-black dark:text-white">
+                                                    <label class="poppins-regular" for="password">Ancien mot de passe</label>
+                                                    <input class="border w-full border-[#d5e0d5] dark:border-[#3F3F3F] bg-transparent text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="password" name="user_password" id="password" required/>
+                                                </div>
+                                                <div class="w-full flex flex-col items-start gap-2">  
+                                                    <button class="poppins-regular bg-green-500 px-4 py-[12px] w-1/2 rounded-xl text-white hover:bg-green-700" type="submit">Changer mon mot de passe</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start justify-between w-full p-2 border-b dark:border-[#3F3F3F]">
+                                    <div class="flex flex-col items-start gap-1">                                    
+                                        <label class="poppins-medium text-md">Numéro de téléphone</label>
+                                        <p class="text-gray-600 dark:text-gray-400 text-xs poppins-medium capitalize">(+212) 653******</p>
+                                    </div>
+                                    <p data-dialog="dialog-3" class="open-dialog text-md poppins-semibold text-orange-600 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-600 dark:hover:text-white p-2 rounded-xl">Modifier</p>
+                                    <div id="dialog-3" class="dialog fixed inset-0 flex items-center justify-center hidden z-20">
+                                        <div class="bg-white dark:bg-[#060809] p-5 rounded-xl w-[400px] shadow-lg text-center">
+                                            <div class="w-full flex items-center justify-between border-b dark:border-[#3F3F3F]">
+                                                <h1 class="w-full flex items-center justify-start text-2xl poppins-semibold">Numéro de téléphone</h1>
+                                                <button class="close-dialog py-2 rounded dark:bg-[#060809]">@icons.Close("30px","stroke-black dark:stroke-white")</button>
+                                            </div>
+                                            <form hx-post="/update-profile" hx-target="this" hx-swap="outerHTML" enctype="multipart/form-data" class="w-full mt-3 flex flex-col fade-in gap-5 justify-between items-start" method="POST">
+                                                <div class="w-full flex flex-col items-start gap-2 bg-transparent text-black dark:text-white">
+                                                    <label class="poppins-regular" for="Phone">Nouvel Numéro de téléphone</label>
+                                                    <input class="border w-full border-[#d5e0d5] dark:border-[#3F3F3F] bg-transparent text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="text" name="Phone" id="Phone" required/>
+                                                </div>
+                                                <div class="w-full flex flex-col items-start gap-2">  
+                                                    <button class="poppins-regular bg-green-500 px-4 py-[12px] w-1/2 rounded-xl text-white hover:bg-green-700" type="submit">mettre à jour</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start justify-between w-full p-2 border-b dark:border-[#3F3F3F]">
+                                    <div class="flex flex-col items-start gap-1">                                    
+                                        <label class="poppins-medium text-md">Adresse</label>
+                                        <p class="text-gray-600 dark:text-gray-400 text-xs poppins-medium capitalize">Ajoutez ou modifiez votre Adresse</p>
+                                    </div>
+                                    <p data-dialog="dialog-4" class="open-dialog text-md poppins-semibold text-orange-600 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-600 dark:hover:text-white p-2 rounded-xl">Modifier</p>
+                                    <div id="dialog-4" class="dialog fixed inset-0 flex items-center justify-center hidden z-20">
+                                        <div class="bg-white dark:bg-[#060809] p-5 rounded-xl w-[400px] shadow-lg text-center">
+                                            <div class="w-full flex items-center justify-between border-b dark:border-[#3F3F3F]">
+                                                <h1 class="w-full flex items-center justify-start text-2xl poppins-semibold">Adresse</h1>
+                                                <button class="close-dialog py-2 rounded dark:bg-[#060809]">@icons.Close("30px","stroke-black dark:stroke-white")</button>
+                                            </div>
+                                            <form hx-post="/update-profile" hx-target="this" hx-swap="outerHTML" enctype="multipart/form-data" class="w-full mt-3 flex flex-col fade-in gap-5 justify-between items-start" method="POST">
+                                                <div class="w-full flex flex-col items-start gap-2 bg-transparent text-black dark:text-white">
+                                                    <label class="poppins-regular" for="address">Nouvel address</label>
+                                                    <input class="border w-full border-[#d5e0d5] dark:border-[#3F3F3F] bg-transparent text-black dark:text-white focus:outline-none hover:shadow-pink-300 hover:shadow-sm focus:shadow-pink-300 focus:shadow-sm px-[20px] py-[18px] rounded-xl" type="text" name="address" id="address" required/>
+                                                </div>
+                                                <div class="w-full flex flex-col items-start gap-2">  
+                                                    <button class="poppins-regular bg-green-500 px-4 py-[12px] w-1/2 rounded-xl text-white hover:bg-green-700" type="submit">mettre à jour</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start justify-between w-full p-2 border-b dark:border-[#3F3F3F]">
+                                    <div class="flex flex-col items-start gap-1">                                    
+                                        <label class="poppins-medium text-md">Abonnements</label>
+                                        <p class="text-gray-600 dark:text-gray-400 text-xs poppins-medium capitalize">Obtenez carnet Premium</p>
+                                    </div>
+                                    <div class="p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-[#060809] rounded-full">@icons.Arrow("30px","-rotate-90 stroke-black dark:stroke-white")</div>
+                                </div>
+                                <div class="flex items-start justify-between w-full p-2 border-b dark:border-[#3F3F3F]">
+                                    <div class="flex flex-col items-start gap-1">                                    
+                                        <label class="poppins-medium text-md">Avancé</label>
+                                        <p class="text-gray-600 dark:text-gray-400 text-xs poppins-medium capitalize">Supprimer le compte</p>
+                                    </div>
+                                    <div class="p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-[#060809] rounded-full">@icons.Arrow("30px","-rotate-90 stroke-black dark:stroke-white")</div>
+                                </div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', () => {
+                                        const openDialogButtons = document.querySelectorAll('.open-dialog');
+                                        const closeDialogButtons = document.querySelectorAll('.close-dialog');
+                                        const dialogs = document.querySelectorAll('.dialog');
+                                        const overlay = document.getElementById('overlay');
+
+                                        openDialogButtons.forEach(button => {
+                                            button.addEventListener('click', () => {
+                                                const dialogId = button.getAttribute('data-dialog');
+                                                const dialog = document.getElementById(dialogId);
+                                                dialog.classList.remove('hidden');
+                                                overlay.classList.remove('hidden');
+                                            });
+                                        });
+
+                                        closeDialogButtons.forEach(button => {
+                                            button.addEventListener('click', () => {
+                                                const dialog = button.closest('.dialog');
+                                                dialog.classList.add('hidden');
+                                                overlay.classList.add('hidden');
+                                            });
+                                        });
+
+                                        // Close dialog if overlay is clicked
+                                        overlay.addEventListener('click', () => {
+                                            dialogs.forEach(dialog => dialog.classList.add('hidden'));
+                                            overlay.classList.add('hidden');
+                                        });
+                                    });
+                                </script>
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>   
+}

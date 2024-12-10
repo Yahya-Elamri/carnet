@@ -1,0 +1,158 @@
+package components 
+
+import (
+	"github.com/Yahya-Elamri/signeitfaster/module"
+    "github.com/Yahya-Elamri/signeitfaster/views/icons"
+    "fmt"
+)
+
+script ToggleDiv(id string){
+    var div = document.getElementById(id);
+    if (div.style.display === "none" || div.style.display === "") {
+        div.style.display = "block";
+    } else {
+        div.style.display = "none";
+    }
+}
+
+templ Comment(users struct{UserId uint;Username string; ProfileUrl string},comments []module.CommentWithUser,posts int,threads int){
+    <div class="w-full">
+        for _,comment := range comments {
+            <div class="w-full flex flex-col items-start gap-2">
+                <div class="w-full flex gap-2 items-center">
+                    <div class="w-[35px] h-[35px] bg-contain bg-center overflow-hidden rounded-full">
+                        <div class={BackgroundImage(comment.ProfileUrl,"cover")}></div>
+                    </div>
+                    <div class="flex gap-1 items-center">
+                        <p class="poppins-regular text-md">{comment.Username}</p>
+                        <p class="poppins-regular text-md"><span class="text-lg poppins-regular">.</span> 2h</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-2">
+                    <div class="w-[35px]"></div>
+                    <div class="w-full flex flex-col gap-2 items-start">
+                        <p class="poppins-regular text-lg break-words w-full px-1">{comment.Content}</p>
+                        <div class="flex items-center justify-start w-full gap-3">
+                            if comment.UserVote == 0 {
+                                <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                    <form hx-post={fmt.Sprintf("/comment/%d/vote", comment.CommentID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="upvote">
+                                        <button type="submit">
+                                            @icons.Up("20px","stroke-gray-800 dark:stroke-white hover:stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                        </button>
+                                    </form>
+                                    <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", comment.Votes)}</p>
+                                    <form hx-post={fmt.Sprintf("/comment/%d/vote", comment.CommentID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="downvote">
+                                        <button type="submit">
+                                            @icons.Up("20px","rotate-180 cursor-pointer stroke-gray-800 dark:stroke-white hover:stroke-red-500 transition-colors duration-200")
+                                        </button>
+                                    </form>
+                                </div>
+                            }else if comment.UserVote == 1 {
+                                <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                    <form hx-post={fmt.Sprintf("/comment/%d/vote", comment.CommentID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="upvote">
+                                        <button type="submit">
+                                            @icons.Up("20px","stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                        </button>
+                                    </form>
+                                    <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", comment.Votes)}</p>
+                                    <form hx-post={fmt.Sprintf("/comment/%d/vote", comment.CommentID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="downvote">
+                                        <button type="submit">
+                                            @icons.Up("20px","rotate-180 cursor-pointer stroke-gray-800 dark:stroke-white hover:stroke-red-500 transition-colors duration-200")
+                                        </button>
+                                    </form>
+                                </div>
+                            }else {
+                                <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                    <form hx-post={fmt.Sprintf("/comment/%d/vote", comment.CommentID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="upvote">
+                                        <button type="submit">
+                                            @icons.Up("20px","stroke-gray-800 dark:stroke-white hover:stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                        </button>
+                                    </form>
+                                    <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", comment.Votes)}</p>
+                                    <form hx-post={fmt.Sprintf("/comment/%d/vote", comment.CommentID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                        <input type="hidden" name="vote" value="downvote">
+                                        <button type="submit">
+                                            @icons.Up("20px","rotate-180 cursor-pointer stroke-red-500 transition-colors duration-200")
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+                            <button onclick={ToggleDiv(fmt.Sprintf("_%d",comment.CommentID))} class="bg-[#eaedef] dark:bg-[#060809] text-black dark:text-white hover:bg-gray-200 rounded-full p-2 flex items-center gap-1 justify-center">
+                                @icons.Comment("18px","hover:stroke-black stroke-gray-800 dark:stroke-white transition-colors duration-300") Répondre
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id={fmt.Sprintf("_%d",comment.CommentID)} class="w-[60%] mb-2 py-4 border-b dark:border-[#3F3F3F]" style="display: none;">
+                    <div class="flex items-center justify-center space-x-3">
+                        <div class="w-[35px] h-[35px] bg-contain bg-center overflow-hidden rounded-full">
+                            <div class={BackgroundImage(transform(users.ProfileUrl)[0],"cover")}></div>
+                        </div>
+                        <form hx-post="/add-comment" hx-target="this" hx-swap="outerHTML" method="post" class="flex-grow">
+                            if posts != 0{
+                                <input type="hidden" name="post_id" value={fmt.Sprintf("%d",posts)} />
+                            }
+                            if threads != 0{
+                                <input type="hidden" name="thread_id" value={fmt.Sprintf("%d",threads)} />
+                            }    
+                            <input type="hidden" name="user_id" value={fmt.Sprintf("%d",users.UserId)} />
+                            <input type="hidden" name="parent_comment_id" value={fmt.Sprintf("%d",comment.CommentID)} />
+                            <input
+                                name="content"
+                                type="text"
+                                placeholder="Écrivez un commentaire public..."
+                                class="w-full px-4 py-2 border border-[#d5e0d5] dark:border-[#3F3F3F] dark:bg-[#060809] text-black dark:text-white focus:outline-none hover:shadow-pink-500 hover:shadow-sm focus:shadow-pink-500 focus:shadow-sm rounded-full"
+                                required
+                            />
+                        </form>
+                        <div class="flex justify-between">
+                            <button class="text-gray-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                if comment.ReplyCount != 0 {
+                    <div class="w-full flex items-start gap-2">
+                        <div class="w-[35px]"></div>                                  
+                        <div class="w-full my-1">
+                            if posts != 0{
+                                <div hx-get={string(templ.URL(fmt.Sprintf("/p/%s/comments/%d/replies/%d",comment.Username,posts,comment.CommentID)))}  hx-target="this" hx-swap="outerHTML" hx-indicator="#comment-loading-spinner" class="w-full flex flex-col gap-2">
+                                    <div class="flex gap-5 items-center">
+                                        <div class="w-16 h-[1px] bg-[#3F3F3F]"></div>
+                                        <p class="poppins-regular text-md">voir les réponses {fmt.Sprintf("(%d)",comment.ReplyCount)}</p>
+                                    </div>
+                                    <div class="w-full flex items-start justify-start">
+                                        <div id="comment-loading-spinner" class="my-indicator">
+                                            <div class="spinner animate-spin rounded-full h-5 w-5 border-2 border-blue-500"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            if threads != 0{
+                                <div hx-get={string(templ.URL(fmt.Sprintf("/t/%s/comments/%d/replies/%d",comment.Username,threads,comment.CommentID)))}  hx-target="this" hx-swap="outerHTML" hx-indicator="#comment-loading-spinner" class="w-full flex flex-col gap-2">
+                                    <div class="flex gap-5 items-center">
+                                        <div class="w-16 h-[1px] bg-[#3F3F3F]"></div>
+                                        <p class="poppins-regular text-md">voir les réponses {fmt.Sprintf("(%d)",comment.ReplyCount)}</p>
+                                    </div>
+                                    <div class="w-full flex items-start justify-start">
+                                        <div id="comment-loading-spinner" class="my-indicator">
+                                            <div class="spinner animate-spin rounded-full h-5 w-5 border-2 border-blue-500"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,607 @@
+package home
+
+import (
+    "github.com/Yahya-Elamri/signeitfaster/views/components"
+    "github.com/Yahya-Elamri/signeitfaster/module"
+    "github.com/Yahya-Elamri/signeitfaster/views/icons"
+    "fmt"
+    "time"
+    "strconv"
+)
+
+func transform(jsonString string) []string {
+	cleanedString := strings.Trim(jsonString, "[]")
+	cleanedString = strings.ReplaceAll(cleanedString, `"`, "")
+	paths := strings.Split(cleanedString, ",")
+	return paths
+}
+
+css BackgroundImage(url,bgsize string){
+    width: 100%;
+    height: 100%;
+    background-image: { fmt.Sprintf("url('/assets%s')", url) };
+    background-size: { fmt.Sprintf("%s", bgsize) };
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+
+script ToggleDiv(id string){
+    var div = document.getElementById(id);
+    if (div.style.display === "none" || div.style.display === "") {
+        div.style.display = "block";
+    } else {
+        div.style.display = "none";
+    }
+}
+
+templ Home(){
+    @components.Header("/assets/imgs/logoblack.png")
+    <div>
+        not login
+    </div>
+}
+
+templ TheRealHome(users struct{UserId uint;Username string; ProfileUrl string},items []module.MixedItem,communitiesSugg []module.Communities){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel() 
+        <div class="w-full md:max-w-[calc(100vw-290px)] flex items-start justify-center gap-16">
+            <div class="w-[72%]">
+                <div class="w-full flex items-start justify-between">
+                    <div class="w-[68%] flex flex-col items-start gap-2">
+                        <div class="w-full flex items-center gap-4 bg-[#ffffff] dark:bg-[#0F0F0F] text-black dark:text-white py-5 border-b dark:border-[#3F3F3F] ">
+                            <a href="/" class="flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#060809] text-black dark:text-white rounded-full px-4 py-2 text-lg poppins-regular">@icons.Posts("30px"," fill-black dark:fill-white stroke-1") Posts</a>
+                            <a href="/video" class="flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#060809] text-black dark:text-white rounded-full px-4 py-2 text-lg poppins-regular">@icons.Video("30px","stroke-black dark:stroke-white") Vidéo</a>
+                            <a href="/thread" class="flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#060809] text-black dark:text-white rounded-full px-4 py-2 text-lg poppins-regular">@icons.Threads("30px","fill-black dark:fill-white") Threads</a>
+                            <a href="/marketplace" class="flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#060809] text-black dark:text-white rounded-full px-4 py-2 text-lg poppins-regular">@icons.Market("30px","fill-black dark:fill-white") Marketplace</a>
+                        </div>
+                        for _, item := range items {
+                        switch item.Type {
+                        case "post":
+                            {{ posts := item.Content.(module.PostWithCommunity) }}
+                            @components.Post(posts)
+                        case "thread":
+                            {{ thread := item.Content.(module.ThreadWithCommunity) }}
+                            @components.Thread(thread)
+                        default:
+                            fmt.Println("Unknown item type")
+                        }
+                    }
+                        
+                    </div>
+                    <div class="w-[30%] bg-[#eaedef] dark:bg-[#060809] text-black dark:text-white p-4 sticky top-[70px] rounded-xl flex flex-col items-start gap-4">
+                        <h1 class="poppins-semibold text-2xl capitalize border-b dark:border-[#3F3F3F] border-gray-800 w-full py-4">bienvenue {users.Username}</h1>
+                        <div class="w-full flex flex-col items-start gap-1">
+                            <p class="poppins-medium text-lg text-ellipsis">Suggestion</p>
+                            <div class="w-full">
+                                for _,Sugg := range communitiesSugg {
+                                    <a href={templ.URL(fmt.Sprintf("/communautes/%s",Sugg.Name))} class="w-full hover:border-gray-800 flex gap-2 items-center p-4 border-b dark:border-[#3F3F3F] border-gray-600 last:border-none">
+                                        <div class="w-[46px] h-[46px] bg-contain bg-center overflow-hidden rounded-full">
+                                            <div class={BackgroundImage(transform(Sugg.CommunitiesMedia)[0],"cover")}></div>
+                                        </div>
+                                        <div class="w-[73%]">
+                                            <p class="poppins-regular">{Sugg.Name}</p>
+                                            <div class="w-full overflow-hidden"><p class="max-w-[350px] truncate">{Sugg.Description}</p></div>
+                                        </div>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+templ HomeLogged(users struct{UserId uint;Username string; ProfileUrl string},posts []module.PostWithCommunity,threads []module.ThreadWithCommunity,communitiesSugg []module.Communities){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel() 
+        <div class="w-full md:max-w-[calc(100vw-290px)] flex items-start justify-center gap-16">
+            <div class="w-[72%]">
+                <div class="w-full flex items-start justify-between">
+                    <div class="w-[68%] flex flex-col items-start gap-2">
+                        <div class="w-full flex items-center gap-4 bg-[#ffffff] dark:bg-[#0F0F0F] text-black dark:text-white py-5 border-b dark:border-[#3F3F3F] ">
+                            <a href="/" class="flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#060809] text-black dark:text-white rounded-full px-4 py-2 text-lg poppins-regular">@icons.Posts("30px"," fill-black dark:fill-white stroke-1") Posts</a>
+                            <a href="/video" class="flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#060809] text-black dark:text-white rounded-full px-4 py-2 text-lg poppins-regular">@icons.Video("30px","stroke-black dark:stroke-white") Vidéo</a>
+                            <a href="/thread" class="flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#060809] text-black dark:text-white rounded-full px-4 py-2 text-lg poppins-regular">@icons.Threads("30px","fill-black dark:fill-white") Threads</a>
+                            <a href="/marketplace" class="flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#060809] text-black dark:text-white rounded-full px-4 py-2 text-lg poppins-regular">@icons.Market("30px","fill-black dark:fill-white") Marketplace</a>
+                        </div>
+                        if len(posts)>0{
+                            @components.PostsComponents(posts)
+                        }else if len(threads)>0{
+                            @components.ThreadsComponents(threads)
+                        }else {
+                            <div>error</div>
+                        }
+                    </div>
+                    <div class="w-[30%] bg-[#eaedef] dark:bg-[#060809] text-black dark:text-white p-4 sticky top-[70px] rounded-xl flex flex-col items-start gap-4">
+                        <h1 class="poppins-semibold text-2xl capitalize border-b dark:border-[#3F3F3F] border-gray-800 w-full py-4">bienvenue {users.Username}</h1>
+                        <div class="w-full flex flex-col items-start gap-1">
+                            <p class="poppins-medium text-lg text-ellipsis">Suggestion</p>
+                            <div class="w-full">
+                                for _,Sugg := range communitiesSugg {
+                                    <a href={templ.URL(fmt.Sprintf("/communautes/%s",Sugg.Name))} class="w-full hover:border-gray-800 flex gap-2 items-center p-4 border-b dark:border-[#3F3F3F] border-gray-600 last:border-none">
+                                        <div class="w-[46px] h-[46px] bg-contain bg-center overflow-hidden rounded-full">
+                                            <div class={BackgroundImage(transform(Sugg.CommunitiesMedia)[0],"cover")}></div>
+                                        </div>
+                                        <div class="w-[73%]">
+                                            <p class="poppins-regular">{Sugg.Name}</p>
+                                            <div class="w-full overflow-hidden"><p class="max-w-[350px] truncate">{Sugg.Description}</p></div>
+                                        </div>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+templ TendanceView(users struct{UserId uint;Username string; ProfileUrl string},posts []module.PostWithCommunity,communitiesSugg []module.Communities){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel() 
+        <div class="w-full md:max-w-[calc(100vw-290px)] flex items-start justify-center gap-16">
+            <div class="w-[72%]">
+                <div class="w-full flex items-start justify-between">
+                    <div class="w-[68%] flex flex-col items-start gap-2">
+                        <div class="w-full flex items-center gap-2 dark:bg-[#0F0F0F] text-black dark:text-white bg-white py-5 border-b dark:border-[#3F3F3F]">
+                            <div class="w-[110px] h-[110px] max-h-[120px] p-2 flex items-center justify-center bg-cover bg-yellow-600 bg-center dark:border-[#3F3F3F] overflow-hidden rounded-xl border-2">
+                                <div class={BackgroundImage("/imgs/fire.png","contain")}></div>
+                            </div>
+                            <h1 class="text-6xl poppins-semibold">Tendance</h1>
+                        </div>
+                        @components.PostsComponents(posts)
+                    </div>
+                    <div class="w-[30%] bg-[#eaedef] dark:bg-[#060809] text-black dark:text-white p-4 rounded-xl sticky top-[70px] flex flex-col items-start gap-4">
+                        <h1 class="poppins-semibold text-2xl capitalize border-b dark:border-[#3F3F3F] border-gray-800 w-full py-4">bienvenue {users.Username}</h1>
+                        <div class="w-full flex flex-col items-start gap-1">
+                            <p class="poppins-medium text-lg text-ellipsis">Suggestion</p>
+                            <div class="w-full">
+                                for _,Sugg := range communitiesSugg {
+                                    <a href={templ.URL(fmt.Sprintf("/communautes/%s",Sugg.Name))} class="w-full hover:border-gray-800  flex gap-2 items-center p-4 border-b dark:border-[#3F3F3F] border-gray-600 last:border-none">
+                                        <div class="w-[46px] h-[46px] bg-contain bg-center overflow-hidden rounded-full">
+                                            <div class={BackgroundImage(transform(Sugg.CommunitiesMedia)[0],"cover")}></div>
+                                        </div>
+                                        <div class="w-[73%]">
+                                            <p class="poppins-regular">{Sugg.Name}</p>
+                                            <div class="w-full overflow-hidden"><p class="max-w-[350px] truncate">{Sugg.Description}</p></div>
+                                        </div>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+templ HomeLoggedMarketplace(users struct{UserId uint;Username string; ProfileUrl string},items []module.MixedListing,totalCount int64){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel()
+        <div class="w-full flex flex-col gap-2 justify-center items-center my-5">
+            <div class="w-[73%] flex items-start justify-between">
+                <p class="text-lg poppins-regular">Sélection du jour</p>
+                <a class="text-lg poppins-regular" href="/register">Publier Votre annonce ici</a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-[73%] gap-2">
+                for _, item := range items {
+                    <a class="flex flex-col items-start gap-5 w-full h-[480px] cursor-pointer hover:shadow-sm border-b dark:border-[#3F3F3F]-[1px] p-1" href={ templ.URL(fmt.Sprintf("/marketplace/%s/%d",item.Category,item.Id)) }>
+                        <div class="flex w-full gap-2 items-center">
+                            <div class="w-[46px] h-[46px] bg-contain bg-center overflow-hidden rounded-full">
+                                <div class={BackgroundImage(transform(item.ProfileUrl)[0],"cover")}></div>
+                            </div>
+                            <div>
+                                <p class="poppins-regular">{item.Username}</p>
+                                {{
+                                timestampStr := string(item.CreatedAt)
+                                layout := "2006-01-02 15:04:05"
+                                parsedTime, err := time.Parse(layout, timestampStr)
+                                if err != nil {
+                                    fmt.Println("Error parsing time:", err)
+                                    return
+                                }
+                                location, err := time.LoadLocation("Africa/Casablanca")
+                                now := time.Now().In(location)
+                                diff := now.Sub(parsedTime)
+                                if diff < 0 {
+                                    diff = 0 // Prevent negative times, handle future timestamps
+                                }
+                            }}
+                                <p class="poppins-regular flex gap-1 items-center">@icons.Clock("20px","") il y a
+                                    switch {
+                                        case diff < time.Minute:
+                                            if int(diff.Seconds()) == 1 {
+                                                <span>{"1 second"}</span>
+                                            }else{
+                                            <span>{fmt.Sprintf("%d seconds", int(diff.Seconds()))}</span>}
+                                        case diff < time.Hour:
+                                            if int(diff.Minutes()) == 1 {
+                                                <span>{"1 minute"}</span>
+                                            }else{
+                                            <span>{fmt.Sprintf("%d minutes", int(diff.Minutes()))}</span>}
+                                        case diff < time.Hour*24:
+                                            if int(diff.Hours()) == 1 {
+                                                <span>{"1 heure"}</span>
+                                            }else{
+                                            <span>{fmt.Sprintf("%d heures", int(diff.Hours()))}</span>}
+                                        case diff < time.Hour*24*30:
+                                            if int(diff.Hours() / 24) == 1 {
+                                                <span>{"1 jour"}</span>
+                                            }else{
+                                            <span>{fmt.Sprintf("%d jours", int(diff.Hours() / 24))}</span>}
+                                        case diff < time.Hour*24*365:
+                                            if int(diff.Hours() / 24 / 30) == 1 {
+                                                <span>{"1 mois"}</span>
+                                            }else{
+                                            <span>{fmt.Sprintf("%d mois", int(diff.Hours() / 24 / 30))}</span>}
+                                        default:
+                                            if int(diff.Hours() / 24 / 365) == 1 {
+                                                <span>{"1 année"}</span>
+                                            }else{
+                                            <span>{fmt.Sprintf("%d années", int(diff.Hours() / 24 / 365))}</span>}
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                        <div class="h-[60%] md:h-[50%] lg:h-[60%] w-full bg-contain bg-center overflow-hidden">
+                            <div class={BackgroundImage(transform(item.ImageURL)[0],"cover")}></div>
+                        </div>
+                        <div class="w-full md:h-[50%] lg:h-[40%] flex flex-col items-start justify-between gap-4">
+                            <div class="w-full flex flex-col items-start gap-4">
+                                <h1 class="text-2xl w-full poppins-regular capitalize truncate">
+                                    {item.PartName}
+                                    {item.Make}
+                                    {item.Model}
+                                </h1>
+                                if item.Category != "voitureparts" {
+                                    <ul class="flex items-center flex-wrap gap-2">
+                                        <li class="flex items-center gap-2 poppins-regular">
+                                            @icons.Seats("25px","")
+                                            {fmt.Sprintf("%d", item.Seats)}
+                                        </li>
+                                        <li class="flex items-center gap-2 poppins-regular">
+                                            @icons.MileAge("25px","")
+                                            {fmt.Sprintf("%d", item.Mileage)} KM
+                                        </li>
+                                        <li class="flex items-center gap-2 poppins-regular">
+                                            @icons.Transmission("25px","")
+                                            {item.Transmission}
+                                        </li>
+                                        <li class="flex items-center gap-2 poppins-regular">
+                                            @icons.Fuel("25px","")
+                                            {item.FuelType}
+                                        </li>
+                                    </ul>
+                                }else {
+                                    <ul class="flex items-center flex-wrap gap-2">
+                                        <li class="flex items-center gap-1 text-gray-500 poppins-regular text-lg">
+                                            <span class="text-black">Marque</span> : {item.Make}
+                                        </li>
+                                        <li class="flex items-center gap-1 text-gray-500 poppins-regular text-lg">
+                                            <span class="text-black">Etat</span> : {item.Etat}
+                                        </li>
+                                        <li class="flex items-center gap-1 text-gray-500 poppins-regular text-lg">
+                                            <span class="text-black">Stock</span> : {fmt.Sprintf("%d", item.Stock)}
+                                        </li>
+                                    </ul>
+                                }
+                            </div>
+                            <div class="flex items-center justify-between w-full">
+                                <p class="text-xl poppins-regular gap-1">
+                                    if item.Category == "carlocation"{
+                                        {fmt.Sprintf("%.2f", item.Price)} Dh<span class="text-gray-400 text-md">/par Jour</span>
+                                    }else {
+                                        {fmt.Sprintf("%.2f", item.Price)} Dh<span class="text-gray-400 text-md"></span>
+                                    }
+                                </p>
+                                <p>@icons.Arrow("45px","stroke-black dark:stroke-white -rotate-90")</p>
+                            </div>
+                        </div>
+                    </a>
+                }                        
+            </div>
+            <div class="w-full flex items-center justify-center gap-5 my-6">
+                <script src="https://cdn.jsdelivr.net/gh/gnat/surreal@3b4572dd0938ce975225ee598a1e7381cb64ffd8/surreal.js"></script>
+                <script>
+                    function removePageQueryParameter() {
+                            const url = new URL(window.location.href);
+                            const params = new URLSearchParams(url.search);
+                            params.delete('page');
+                            const newUrl = `${url.origin}${url.pathname}?${params.toString()}`;
+                            return newUrl;
+                        }
+                    function getSpecificAttributeFromPath(attribute) {
+                        let url = new URL(window.location.href);
+                        let path = url.pathname;
+
+                        let params = new URLSearchParams(url.search);
+                        return params.get(attribute);
+                    }
+                </script>
+                <a href="#" id="prevButt" class="px-5 py-3 hover:bg-emerald-50 dark:hover:bg-gray-900 text-lg border border-b dark:border-[#3F3F3F]lack rounded-full">
+                    @icons.Arrow("30px","stroke-black dark:stroke-white rotate-90")
+                </a>
+                <script type="text/javascript">     
+                    var page = getSpecificAttributeFromPath("page")
+                    if (isNaN(page) || page =="" || page === null || page <= 1) {
+                        page = 1
+                    }else{
+                        page = parseInt(page) - 1
+                    }
+                    if(window.location.search == ""){
+                        var fullpath = window.location.pathname +`?page=${page}`
+                    }else {
+                        var fullpath = removePageQueryParameter() +`&page=${page}`
+                    }
+                    document.getElementById("prevButt").href=fullpath;
+                </script>  
+                for i := int64(0); i < totalCount; i++ {
+                    <a href="#" id={strconv.FormatInt(i+1, 10)} data-name={strconv.FormatInt(i+1, 10)} class="px-5 py-3 hover:bg-emerald-50 dark:hover:bg-gray-900 text-lg border border-b dark:border-[#3F3F3F]lack rounded-full">{strconv.FormatInt(i+1, 10)}</a>
+                    <script type="text/javascript">
+                        var Path =  removePageQueryParameter()
+                        var page = me("-").getAttribute('data-name');
+                        if(window.location.search == ""){
+                            var fullpath = window.location.pathname +`?page=${page}`
+                        }else {
+                            var fullpath = Path +`&page=${page}`
+                        }
+                        me("-").href = fullpath;
+                    </script>
+                }
+                <a href="#" id="nextButt" class="px-5 py-3 hover:bg-emerald-50 dark:hover:bg-gray-900 text-lg border border-b dark:border-[#3F3F3F]lack rounded-full">
+                    @icons.Arrow("30px","stroke-black dark:stroke-white -rotate-90")
+                </a>
+                <script type="text/javascript">     
+                    var page = getSpecificAttributeFromPath("page")
+                    if (isNaN(page)  || page =="" || page === null) {
+                        page = 2
+                    }else {
+                        page = parseInt(page) + 1
+                    }                                
+                    if(window.location.search == ""){
+                        var fullpath = window.location.pathname +`?page=${page}`
+                    }else {
+                        var fullpath = removePageQueryParameter() +`&page=${page}`
+                    }
+                    document.getElementById("nextButt").href=fullpath;
+                </script>
+            </div>
+        </div>
+    </div>
+}
+
+templ TheOneView(users struct{UserId uint;Username string; ProfileUrl string},posts *module.PostWithCommunity,threads *module.ThreadWithCommunity,comments []module.CommentWithUser,communitiesSugg []module.Communities){
+    @components.HeaderLogged(users)
+    <div class="grid grid-cols-1 md:grid-cols-[272px_1fr]">
+        @components.SidePanel() 
+        <div class="w-full md:max-w-[calc(100vw-290px)] flex items-start justify-center gap-16 mb-10">
+            <div class="w-[72%]">
+                <div class="w-full flex items-start justify-between">
+                    <div class="w-[68%] flex flex-col items-start gap-2">
+                        <div class="w-full flex items-center gap-4 bg-[#ffffff] dark:bg-[#0F0F0F] text-black dark:text-white py-5 border-b dark:border-[#3F3F3F] ">
+                            <a href="/" class="flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#060809] text-black dark:text-white rounded-full px-4 py-2 text-lg poppins-regular">@icons.Posts("30px"," fill-black dark:fill-white stroke-1") Posts</a>
+                            <a href="/video" class="flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#060809] text-black dark:text-white rounded-full px-4 py-2 text-lg poppins-regular">@icons.Video("30px","stroke-black dark:stroke-white") Vidéo</a>
+                            <a href="/thread" class="flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#060809] text-black dark:text-white rounded-full px-4 py-2 text-lg poppins-regular">@icons.Threads("30px","fill-black dark:fill-white") Threads</a>
+                            <a href="/marketplace" class="flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-[#060809] text-black dark:text-white rounded-full px-4 py-2 text-lg poppins-regular">@icons.Market("30px","fill-black dark:fill-white") Marketplace</a>
+                        </div>
+                        if posts != nil{
+                            @components.Post(*posts)
+                        }else if threads != nil{
+                            @components.Thread(*threads)
+                        }else {
+                            <div>error</div>
+                        }
+                        <div class="w-full mx-auto my-4 bg-gray-100 dark:bg-gray-900 p-4 rounded-lg shadow-sm border dark:border-[#3F3F3F]">
+                            <div class="flex items-center justify-center space-x-3">
+                                <div class="w-[40px] h-[40px] bg-contain bg-center overflow-hidden rounded-full">
+                                    <div class={BackgroundImage(transform(users.ProfileUrl)[0],"cover")}></div>
+                                </div>
+                                <form hx-post="/add-comment" hx-target="this" hx-swap="outerHTML" method="post" class="flex-grow">
+                                    if posts != nil{
+                                        <input type="hidden" name="post_id" value={fmt.Sprintf("%d",posts.PostID)} />
+                                    }
+                                    if threads != nil{
+                                        <input type="hidden" name="thread_id" value={fmt.Sprintf("%d",threads.ThreadID)} />
+                                    }    
+                                    <input type="hidden" name="user_id" value={fmt.Sprintf("%d",users.UserId)} />
+                                    <input
+                                        name="content"
+                                        type="text"
+                                        placeholder="Écrivez un commentaire public..."
+                                        class="w-full px-4 py-2 border border-[#d5e0d5] dark:border-[#3F3F3F] dark:bg-[#060809] text-black dark:text-white focus:outline-none hover:shadow-pink-500 hover:shadow-sm focus:shadow-pink-500 focus:shadow-sm rounded-full"
+                                        required
+                                    />
+                                </form>
+                                <div class="flex justify-between">
+                                    <button class="text-gray-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full">
+                            for _,comment := range comments {
+                                <div class="w-full flex flex-col items-start gap-2">
+                                    <div class="w-full flex gap-2 items-center">
+                                        <div class="w-[35px] h-[35px] bg-contain bg-center overflow-hidden rounded-full">
+                                            <div class={BackgroundImage(comment.ProfileUrl,"cover")}></div>
+                                        </div>
+                                        <div class="flex gap-1 items-center">
+                                            <p class="poppins-regular text-md">{comment.Username}</p>
+                                            <p class="poppins-regular text-md"><span class="text-lg poppins-regular">.</span> 2h</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <div class="w-[35px]"></div>
+                                        <div class="w-full flex flex-col gap-2 items-start">
+                                            <p class="poppins-regular text-lg break-words w-full px-1">{comment.Content}</p>
+                                            <div class="flex items-center justify-start w-full gap-3">
+                                                if comment.UserVote == 0 {
+                                                    <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                                        <form hx-post={fmt.Sprintf("/comment/%d/vote", comment.CommentID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                                            <input type="hidden" name="vote" value="upvote">
+                                                            <button type="submit">
+                                                                @icons.Up("20px","stroke-gray-800 dark:stroke-white hover:stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                                            </button>
+                                                        </form>
+                                                        <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", comment.Votes)}</p>
+                                                        <form hx-post={fmt.Sprintf("/comment/%d/vote", comment.CommentID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                                            <input type="hidden" name="vote" value="downvote">
+                                                            <button type="submit">
+                                                                @icons.Up("20px","rotate-180 cursor-pointer stroke-gray-800 dark:stroke-white hover:stroke-red-500 transition-colors duration-200")
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                }else if comment.UserVote == 1 {
+                                                    <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                                        <form hx-post={fmt.Sprintf("/comment/%d/vote", comment.CommentID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                                            <input type="hidden" name="vote" value="upvote">
+                                                            <button type="submit">
+                                                                @icons.Up("20px","stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                                            </button>
+                                                        </form>
+                                                        <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", comment.Votes)}</p>
+                                                        <form hx-post={fmt.Sprintf("/comment/%d/vote", comment.CommentID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                                            <input type="hidden" name="vote" value="downvote">
+                                                            <button type="submit">
+                                                                @icons.Up("20px","rotate-180 cursor-pointer stroke-gray-800 dark:stroke-white hover:stroke-red-500 transition-colors duration-200")
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                }else {
+                                                    <div hx-target="this" hx-swap="outerHTML" class="flex bg-[#eaedef] dark:bg-[#060809] items-center rounded-full">
+                                                        <form hx-post={fmt.Sprintf("/comment/%d/vote", comment.CommentID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                                            <input type="hidden" name="vote" value="upvote">
+                                                            <button type="submit">
+                                                                @icons.Up("20px","stroke-gray-800 dark:stroke-white hover:stroke-green-500 transition-colors duration-300 cursor-pointer")
+                                                            </button>
+                                                        </form>
+                                                        <p class="break-words poppins-regular text-black dark:text-white text-md">{fmt.Sprintf("%d", comment.Votes)}</p>
+                                                        <form hx-post={fmt.Sprintf("/post/%d/vote", comment.CommentID)} hx-include="this" class="hover:bg-gray-200 dark:bg-[#060809] text-black dark:text-white flex items-center rounded-full p-2">
+                                                            <input type="hidden" name="vote" value="downvote">
+                                                            <button type="submit">
+                                                                @icons.Up("20px","rotate-180 cursor-pointer stroke-red-500 transition-colors duration-200")
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                }
+                                                <button onclick={ToggleDiv(fmt.Sprintf("_%d",comment.CommentID))} class="bg-[#eaedef] dark:bg-[#060809] text-black dark:text-white hover:bg-gray-200 rounded-full p-2 flex items-center gap-1 justify-center">
+                                                    @icons.Comment("18px","hover:stroke-black stroke-gray-800 dark:stroke-white transition-colors duration-300") Répondre
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id={fmt.Sprintf("_%d",comment.CommentID)} class="w-[60%] mb-2 py-4 border-b dark:border-[#3F3F3F]" style="display: none;">
+                                        <div class="flex items-center justify-center space-x-3">
+                                            <div class="w-[35px] h-[35px] bg-contain bg-center overflow-hidden rounded-full">
+                                                <div class={BackgroundImage(transform(users.ProfileUrl)[0],"cover")}></div>
+                                            </div>
+                                            <form hx-post="/add-comment" hx-target="this" hx-swap="outerHTML" method="post" class="flex-grow">
+                                                if posts != nil{
+                                                    <input type="hidden" name="post_id" value={fmt.Sprintf("%d",posts.PostID)} />
+                                                }
+                                                if threads != nil{
+                                                    <input type="hidden" name="thread_id" value={fmt.Sprintf("%d",threads.ThreadID)} />
+                                                }    
+                                                <input type="hidden" name="user_id" value={fmt.Sprintf("%d",users.UserId)} />
+                                                <input type="hidden" name="parent_comment_id" value={fmt.Sprintf("%d",comment.CommentID)} />
+                                                <input
+                                                    name="content"
+                                                    type="text"
+                                                    placeholder="Écrivez un commentaire public..."
+                                                    class="w-full px-4 py-2 border border-[#d5e0d5] dark:border-[#3F3F3F] dark:bg-[#060809] text-black dark:text-white focus:outline-none hover:shadow-pink-500 hover:shadow-sm focus:shadow-pink-500 focus:shadow-sm rounded-full"
+                                                    required
+                                                />
+                                            </form>
+                                            <div class="flex justify-between">
+                                                <button class="text-gray-400">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    if comment.ReplyCount != 0 {
+                                        <div class="w-full flex items-start gap-2">
+                                            <div class="w-[35px]"></div>                                  
+                                            <div class="w-full my-1">
+                                            <style>
+                                                .my-indicator{
+                                                    display:none;
+                                                }
+                                                .htmx-request .my-indicator{
+                                                    display:inline;
+                                                }
+                                                .htmx-request.my-indicator{
+                                                    display:inline;
+                                                }
+                                            </style>
+                                                if posts != nil{
+                                                    <div hx-get={string(templ.URL(fmt.Sprintf("/p/%s/comments/%d/replies/%d",comment.Username,posts.PostID,comment.CommentID)))}  hx-target="this" hx-swap="outerHTML" hx-indicator="#comment-loading-spinner" class="w-full flex flex-col gap-2">
+                                                        <div class="flex gap-5 items-center">
+                                                            <div class="w-16 h-[1px] bg-[#3F3F3F]"></div>
+                                                            <p class="poppins-regular text-md">voir les réponses {fmt.Sprintf("(%d)",comment.ReplyCount)}</p>
+                                                        </div>
+                                                        <div class="w-full flex items-start justify-start">
+                                                            <div id="comment-loading-spinner" class="my-indicator">
+                                                                <div class="spinner animate-spin rounded-full h-5 w-5 border-2 border-blue-500"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                if threads != nil{
+                                                    <div hx-get={string(templ.URL(fmt.Sprintf("/t/%s/comments/%d/replies/%d",comment.Username,threads.ThreadID,comment.CommentID)))}  hx-target="this" hx-swap="outerHTML" hx-indicator="#comment-loading-spinner" class="w-full flex flex-col gap-2">
+                                                        <div class="flex gap-5 items-center">
+                                                            <div class="w-16 h-[1px] bg-[#3F3F3F]"></div>
+                                                            <p class="poppins-regular text-md">voir les réponses {fmt.Sprintf("(%d)",comment.ReplyCount)}</p>
+                                                        </div>
+                                                        <div class="w-full flex items-start justify-start">
+                                                            <div id="comment-loading-spinner" class="my-indicator">
+                                                                <div class="spinner animate-spin rounded-full h-5 w-5 border-2 border-blue-500"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="w-[30%] bg-[#eaedef] dark:bg-[#060809] text-black dark:text-white p-4 sticky top-[70px] rounded-xl flex flex-col items-start gap-4">
+                        <h1 class="poppins-semibold text-2xl capitalize border-b dark:border-[#3F3F3F] border-gray-800 w-full py-4">bienvenue {users.Username}</h1>
+                        <div class="w-full flex flex-col items-start gap-1">
+                            <p class="poppins-medium text-lg text-ellipsis">Suggestion</p>
+                            <div class="w-full">
+                                for _,Sugg := range communitiesSugg {
+                                    <a href={templ.URL(fmt.Sprintf("/communautes/%s",Sugg.Name))} class="w-full hover:border-gray-800 flex gap-2 items-center p-4 border-b dark:border-[#3F3F3F] border-gray-600 last:border-none">
+                                        <div class="w-[46px] h-[46px] bg-contain bg-center overflow-hidden rounded-full">
+                                            <div class={BackgroundImage(transform(Sugg.CommunitiesMedia)[0],"cover")}></div>
+                                        </div>
+                                        <div class="w-[73%]">
+                                            <p class="poppins-regular">{Sugg.Name}</p>
+                                            <div class="w-full overflow-hidden"><p class="max-w-[350px] truncate break-words">{Sugg.Description}</p></div>
+                                        </div>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        </div>
+    </div>
+}
